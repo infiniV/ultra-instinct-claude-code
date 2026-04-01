@@ -1,0 +1,427 @@
+# Ultra Instinct Claude Code - Implementation Guide
+# Feed this to Claude Code: "Read llms.txt and implement these tips for my project"
+# Source: https://github.com/infiniV/ultra-instinct-claude-code
+# 140 tips from 17+ repos with 130k+ combined stars
+
+---
+
+## SETUP
+
+### Install & Config
+```bash
+curl -sL https://install.anthropic.com | sh   # or: npm i -g @anthropic-ai/claude-code
+claude --version                                # verify
+```
+
+### Essential aliases (~/.bashrc or ~/.zshrc)
+```bash
+alias c='claude'
+alias ch='claude --chrome'
+alias cr='claude -r'       # resume session picker
+alias cc='claude -c'       # continue last session
+```
+
+### Settings hierarchy (later overrides earlier)
+```
+~/.claude/settings.json          # global (all projects)
+.claude/settings.json            # project (committed, shared)
+.claude/settings.local.json      # local (gitignored, personal)
+```
+
+### Recommended settings.json
+```jsonc
+{
+  "model": "sonnet",
+  "env": {
+    "CLAUDE_CODE_SUBAGENT_MODEL": "haiku",  // 60-80% cheaper subagents
+    "MAX_THINKING_TOKENS": "10000"           // cut reasoning cost ~70%
+  },
+  "attribution": {
+    "commit": "",
+    "pr": ""
+  }
+}
+```
+
+### Custom status line (shows model, git, tokens)
+```jsonc
+// ~/.claude/settings.json
+{
+  "statusLine": {
+    "type": "command",
+    "command": "~/.claude/scripts/context-bar.sh"
+  }
+}
+```
+
+---
+
+## CLAUDE.md MASTERY
+
+### Hard limits (community-tested)
+- **4,000 chars max per file** (silently truncated beyond)
+- **12,000 chars total** across all instruction files
+- Check: `wc -c CLAUDE.md` -- must be under 4,000
+
+### File discovery order (per directory, walks ancestors to /)
+1. CLAUDE.md
+2. CLAUDE.local.md (gitignored, personal)
+3. .claude/CLAUDE.md
+4. .claude/instructions.md
+
+### @import syntax for large references
+```markdown
+# In CLAUDE.md:
+For API patterns, see @docs/api-conventions.md
+For architecture, see @docs/architecture.md
+```
+
+### Override system defaults explicitly
+```markdown
+# System prompt hardcodes: "Do not create files unless required"
+# CLAUDE.md comes AFTER system rules, so explicit overrides work:
+When implementing features, create separate files for each concern.
+Create test files alongside every new source file.
+```
+
+### Add compact instructions
+```markdown
+## Compact Instructions
+When summarizing, always preserve:
+- File paths and line numbers
+- Error messages and stack traces
+- Test results (pass/fail)
+- Architectural decisions and rationale
+- TODO items and next steps
+```
+
+### Use <important> tags for critical rules
+```markdown
+<important if="working with database">
+NEVER run DROP or DELETE without WHERE clause.
+Always create a migration file for schema changes.
+</important>
+```
+
+### Key rules
+- Update CLAUDE.md after every correction: "Update your CLAUDE.md so you don't repeat this"
+- Keep under 30 lines for cache efficiency
+- Don't duplicate content across hierarchy (deduplicated by hash, but still costs budget)
+- After 2 failed corrections, /clear and write better prompt
+- Run /init to bootstrap -- it does 8-phase onboarding and respects limits
+
+---
+
+## CONTEXT MANAGEMENT
+
+### Session strategy
+- **Sweet spot: 10-30 min sessions** (wall-time efficiency drops 8.8x in 2hr+ sessions)
+- Fresh conversation per topic. Context = milk (fresh & condensed best)
+- Plan acceptance auto-clears context (intentional -- plan persists, discussion drops)
+
+### Compaction internals
+- Preserves last 4 messages verbatim
+- Summarizes everything older into 9 sections
+- Custom compact instructions in CLAUDE.md are respected
+- `/compact Focus on implementing X next` -- add summary direction
+
+### What survives compaction
+```
+SURVIVES: CLAUDE.md, task list, memory files, git state, files on disk
+LOST:     Intermediate reasoning, file contents, conversation nuance, tool history
+```
+
+### Token optimization
+- MCP tools cost ~500 tokens EACH (always loaded). Keep under 10 servers, 80 tools
+- Replace MCPs with CLI skills: same functionality, zero idle cost
+- Agent descriptions load into EVERY Task spawn -- keep under 30 words
+- Use `ENABLE_TOOL_SEARCH=auto:5` for large MCP sets (~50% context savings)
+
+### Handoff pattern (before context runs out)
+```
+"Write HANDOFF.md with: what we built, what works, what's broken,
+ what to do next, and key decisions made."
+```
+Then: `claude "Read HANDOFF.md and continue."`
+
+---
+
+## PROMPTING
+
+### Core principles (consensus from 10 experts)
+1. **Describe outcomes, not steps**: "Fix the failing CI tests" not "open file X, change line Y"
+2. **Paste bug, say "fix"**: Zero micromanagement. Claude debugs well alone
+3. **Challenge: "Grill me on these changes and don't PR until I pass your test"**
+4. **After mediocre fix: "Knowing everything you know now, scrap this and implement the elegant solution"**
+5. **After 2 failed corrections: /clear and better prompt** (don't correct a 3rd time)
+6. **Force depth: "ultrathink"**, "think for ten paragraphs", always ask for 2 plans
+7. **Concept elevation: Give Claude your rough prompt, ask it to make it more concise and effective**
+8. **Anti-sycophancy: "Never say 'interesting approach' -- take a position instead"**
+
+---
+
+## PLANNING
+
+### Always plan first
+```
+Shift+Tab twice to enter plan mode.
+Pour energy into the plan so Claude can one-shot implementation.
+9/10 experts agree: planning 2-3x success rate.
+```
+
+### Interview pattern
+```
+"Read @SPEC.md and interview me in detail using AskUserQuestion
+about literally anything: technical, UI/UX, concerns, tradeoffs.
+Don't ask obvious questions."
+```
+Then FRESH session to execute the spec.
+
+### Phase-gated plans
+```
+Phase 1 -> Unit Tests -> Phase 2 -> Integration Tests -> Phase 3 -> E2E Tests
+```
+
+### Sprint chain (gstack pattern)
+```
+/office-hours > /plan-ceo-review > /plan-design-review > /plan-eng-review
+> [build] > /review > /qa > /ship > /retro
+```
+
+---
+
+## TESTING & VERIFICATION
+
+### Give Claude feedback loops (Boris's #1 tip, 2-3x quality)
+```markdown
+# In CLAUDE.md:
+After making changes, always run:
+- `npm test` to verify tests pass
+- `npm run lint` to check style
+- `npm run typecheck` to verify types
+```
+
+### TDD: Write failing test first, let Claude implement until it passes
+### Fix-First Review: Auto-fix mechanical issues, only ASK about genuine decisions
+### De-Sloppify Pattern: Don't use negative instructions. Add a separate cleanup agent instead
+### Verification Iron Law: "Confidence is not evidence." Always run the actual test
+### Santa Method: Two separate agents review same code independently, compare findings
+
+---
+
+## GIT & GITHUB
+
+### Worktrees for parallel sessions (biggest productivity unlock)
+```bash
+git worktree add ../feature-a -b feature-a
+git worktree add ../feature-b -b feature-b
+# Run separate Claude sessions in each
+```
+
+### Draft PRs for safe review
+```bash
+gh pr create --draft  # Claude creates, you review before marking ready
+```
+
+### Cross-model review
+```
+Claude plans -> Codex reviews -> Claude implements -> Codex verifies
+```
+
+### Review with fresh context
+```bash
+claude -p "Review the changes on this branch against main. Focus on bugs and security."
+```
+
+---
+
+## MULTI-AGENT
+
+### Scout pattern (10-20x cheaper)
+```
+Haiku reads 30 files for pennies -> Sonnet reads the 4 that matter
+```
+
+### Smart model routing
+```
+Haiku:  explore, lookups, file reading
+Sonnet: implementation, debugging, testing
+Opus:   architecture, code review, planning
+```
+
+### Subagent types (observed behavior)
+```
+Explore: Haiku, READ-ONLY, fast, parallelizes tool calls
+Plan:    Parent model, READ-ONLY, must list "Critical Files for Implementation"
+General: Full access, all tools
+Verify:  Adversarial tester, cannot modify files, issues PASS/FAIL/PARTIAL
+```
+
+### One input, one output per agent. /clear between agents.
+
+---
+
+## HOOKS
+
+### Exit codes: 0=allow, 2=deny (blocks tool), other=warn
+### Hook denials act as USER FEEDBACK -- include helpful alternatives, not just "blocked"
+
+### Essential hooks
+
+#### Safety guard (PreToolUse on Bash)
+```bash
+#!/usr/bin/env bash
+set -euo pipefail
+INPUT=$(cat)
+COMMAND=$(echo "$INPUT" | jq -r '.tool_input.command // empty')
+if echo "$COMMAND" | grep -qE "rm -rf|git push.*--force.*main|DROP TABLE|chmod 777"; then
+  echo "Blocked: destructive command. Use safer alternative." >&2
+  exit 2
+fi
+exit 0
+```
+
+#### Block --no-verify (PreToolUse on Bash)
+```bash
+if echo "$COMMAND" | grep -q "\-\-no-verify"; then
+  echo "Blocked: --no-verify bypasses pre-commit hooks" >&2
+  exit 2
+fi
+```
+
+#### Config protection (PreToolUse on Write/Edit)
+Block changes to .eslintrc, .prettierrc, tsconfig.json -- forces fixing code, not weakening linters.
+
+#### Commit nudge after 8+ edits (PostToolUse on Edit)
+Soft reminder to commit. Prevents giant uncommitted changesets.
+
+### Hook placement rules
+```
+Global (~/.claude/settings.json):     Protection hooks (safety, no-squash)
+Project (.claude/settings.json):      Build hooks (linters, test runners)
+Local (.claude/settings.local.json):  Personal hooks (notifications, logging)
+```
+
+### Real fire frequency: Bash 10K+, Read 9K, Edit 5K per session set
+### PreToolUse hooks MUST be fast (<50ms)
+
+---
+
+## MCP, SKILLS & PLUGINS
+
+### Skills > Commands (commands are legacy)
+```yaml
+# .claude/skills/my-skill/SKILL.md
+---
+name: my-skill
+description: What it does and when to use it
+disable-model-invocation: true  # user-only trigger for dangerous skills
+---
+```
+
+### Fewer tools beat many (Apple CodeAct: single primitive outperformed specialized toolkits by 20%)
+### Search-first: Adopt > Extend > Compose > Build
+### Custom slash commands: `.claude/commands/name.md` with $ARGUMENTS
+
+---
+
+## PERFORMANCE & COST
+
+### Cost benchmarks (real data)
+```
+Simple bug fix:      $0.30-0.80  (~10 min, sonnet)
+Feature:             $1-3        (~30 min, sonnet)
+Large refactor:      $5-15       (~1 hr, sonnet + subagents)
+Architecture:        $5-20       (~30 min, opus)
+Agent team (3):      $10-30      (~30 min, sonnet)
+```
+
+### The 5 cost drivers (ranked)
+1. Long sessions (1hr = 10-50x five 12-min sessions)
+2. Opus usage (1.7x sonnet)
+3. Subagents (parallel billing)
+4. Large file reads
+5. Unfocused tool calls
+
+### Cache optimization
+- 95% cache hit rate on sessions >30 min
+- Three cache killers: editing CLAUDE.md mid-session, long CLAUDE.md, switching models
+- Switching models DESTROYS cache (can be MORE expensive than staying on Opus)
+- $200/mo max plan = ~$12K API equivalent
+
+---
+
+## ADVANCED PATTERNS
+
+### Sequential pipeline with fresh context
+```bash
+#!/bin/bash
+set -e
+claude -p "Implement feature from spec..."
+claude -p "Review and cleanup..."
+claude -p "Run build, lint, tests, fix failures..."
+claude -p "Create conventional commit..."
+```
+
+### Model routing in pipelines
+```bash
+claude -p --model opus "Analyze architecture and write plan..."
+claude -p "Implement according to plan..."          # sonnet
+claude -p --model opus "Review for security..."
+```
+
+### Tool restrictions per step
+```bash
+claude -p --allowedTools "Read,Grep,Glob" "Audit for vulnerabilities..."    # read-only
+claude -p --allowedTools "Read,Write,Edit,Bash" "Implement fixes..."        # write
+```
+
+### Cross-iteration context
+```
+SHARED_TASK_NOTES.md -- Claude reads at start, updates at end of each `claude -p` call
+```
+
+### Docker sandbox (no egress)
+```yaml
+services:
+  agent:
+    build: .
+    user: "1000:1000"
+    cap_drop: [ALL]
+    security_opt: [no-new-privileges:true]
+    networks: [internal]
+networks:
+  internal:
+    internal: true  # no outbound
+```
+
+### Permission deny rules
+```jsonc
+{
+  "permissions": {
+    "deny": [
+      "Read(~/.ssh/**)", "Read(~/.aws/**)", "Read(**/.env*)",
+      "Bash(curl * | bash)", "Bash(ssh *)", "Bash(nc *)"
+    ]
+  }
+}
+```
+
+---
+
+## DEEP CUTS (community-discovered behaviors)
+
+### Prompt has a static zone (cached) and dynamic zone (costs tokens every turn)
+```
+[STATIC - cached across turns, free after first]:
+  System instructions, tool definitions, built-in rules
+
+[DYNAMIC - recalculated every turn, costs tokens]:
+  Environment info, git status, CLAUDE.md, settings, skills, MCP
+```
+
+### CLAUDE.md is in the dynamic zone -- always fresh, never cached
+### /init does 8-phase onboarding and imports from .cursor/rules, AGENTS.md, etc.
+### Memory selector sees ONLY filenames + descriptions (up to 5 selected per query)
+### WebFetch: trusted domains get full content, untrusted get 125-char quote limit
+### Tool name aliases work: read, write, edit, glob, grep (case-insensitive, hyphens -> underscores)
