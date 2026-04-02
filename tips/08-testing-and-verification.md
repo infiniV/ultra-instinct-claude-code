@@ -1,3 +1,5 @@
+[Home](../README.md) > 08 Testing & Verification
+
 # 08 Testing & Verification
 
 ### #08.01 Give Claude a Feedback Loop
@@ -160,3 +162,7 @@ REVIEW B: $(cat review-b.md)"
 **Why:** Two independent reviewers with different random seeds catch different issues, and agreement between them signals high-confidence findings.
 
 ---
+
+---
+
+[< 07 Planning & Specs](07-planning-and-specs.md) | [Home](../README.md) | [09 Multi-Agent >](09-multi-agent.md)

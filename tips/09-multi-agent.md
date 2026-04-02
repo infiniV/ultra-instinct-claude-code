@@ -1,3 +1,5 @@
+[Home](../README.md) > 09 Multi-Agent
+
 # 09 Multi-Agent
 
 ### #09.01 Use Subagents for Exploration
@@ -224,3 +226,7 @@ claude -p "Run the full test suite and report failures" &
 **Why:** Background execution lets you keep working in the main conversation while agents handle long-running tasks in parallel.
 
 ---
+
+---
+
+[< 08 Testing & Verification](08-testing-and-verification.md) | [Home](../README.md) | [10 Hooks & Automation >](10-hooks-and-automation.md)

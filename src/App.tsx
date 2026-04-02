@@ -1,5 +1,5 @@
-import { Routes, Route, Navigate } from "react-router-dom";
-import { useState, useEffect, useCallback } from "react";
+import { Routes, Route, Navigate, useLocation } from "react-router-dom";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { House, MagnifyingGlass } from "@phosphor-icons/react";
 import Sidebar from "./components/Sidebar";
 import TipPage from "./components/TipPage";
@@ -65,6 +65,29 @@ export default function App() {
     return () => window.removeEventListener("keydown", onKey);
   }, []);
 
+  const mainRef = useRef<HTMLElement>(null);
+  const scrollPositions = useRef<Record<string, number>>({});
+  const location = useLocation();
+  const prevPath = useRef(location.pathname);
+
+  useEffect(() => {
+    const main = mainRef.current;
+    if (!main) return;
+
+    // Save scroll position for the previous route
+    if (prevPath.current !== location.pathname) {
+      scrollPositions.current[prevPath.current] = main.scrollTop;
+      prevPath.current = location.pathname;
+    }
+
+    // Restore scroll position for the current route, or scroll to top
+    const saved = scrollPositions.current[location.pathname];
+    // Use rAF so the DOM has rendered before we scroll
+    requestAnimationFrame(() => {
+      main.scrollTop = saved ?? 0;
+    });
+  }, [location.pathname]);
+
   return (
     <div className="flex h-screen bg-notion-bg">
       {/* Skip to content */}
@@ -89,7 +112,7 @@ export default function App() {
         onOpenSearch={openSearch}
       />
 
-      <main className="flex-1 overflow-y-auto relative xl:mr-[216px]">
+      <main ref={mainRef} className="flex-1 overflow-y-auto relative xl:mr-[216px]">
         {/* Mobile header */}
         <div className="lg:hidden sticky top-0 z-30 bg-notion-bg/80 backdrop-blur border-b border-notion-border px-4 py-3 flex items-center gap-3">
           <button

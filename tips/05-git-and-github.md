@@ -1,3 +1,5 @@
+[Home](../README.md) > 05 Git & GitHub
+
 # 05 Git & GitHub
 
 ### #05.01 Let Claude Handle Commits
@@ -178,3 +180,7 @@ claude -p "Review this PR for bugs, edge cases, and design issues: $(gh pr diff 
 **Why:** Catching stale branches at session start prevents you from accidentally working on orphaned branches.
 
 ---
+
+---
+
+[< 04 Commands & Shortcuts](04-commands-and-shortcuts.md) | [Home](../README.md) | [06 Prompting >](06-prompting.md)

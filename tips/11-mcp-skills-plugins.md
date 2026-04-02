@@ -1,3 +1,5 @@
+[Home](../README.md) > 11 MCP, Skills & Plugins
+
 # 11 MCP, Skills & Plugins
 
 ### #11.01 MCP Server Basics
@@ -244,3 +246,7 @@ Adopt > Extend > Compose > Build
 **Why:** The cheapest, most reliable code is code someone else already wrote, tested, and maintains.
 
 ---
+
+---
+
+[< 10 Hooks & Automation](10-hooks-and-automation.md) | [Home](../README.md) | [12 Performance & Cost >](12-performance-and-cost.md)

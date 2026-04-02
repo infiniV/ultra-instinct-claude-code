@@ -1,3 +1,5 @@
+[Home](../README.md) > 01 Setup
+
 # 01 Setup
 
 ### #01.01 Install Claude Code
@@ -170,3 +172,7 @@ whisper-stream | claude -p
 **Why:** These three commands confirm everything is working and surface quota issues before they block you.
 
 ---
+
+---
+
+[Home](../README.md) | [02 CLAUDE.md Mastery >](02-claude-md.md)

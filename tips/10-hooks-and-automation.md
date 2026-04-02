@@ -1,3 +1,5 @@
+[Home](../README.md) > 10 Hooks & Automation
+
 # 10 Hooks & Automation
 
 ### #10.01 Hook Basics
@@ -322,3 +324,7 @@ time echo '{"tool_name":"Bash","tool_input":{"command":"ls"}}' | ./hooks/your-ho
 **Why:** PreToolUse hooks fire on every tool call -- a slow hook silently adds minutes to every session.
 
 ---
+
+---
+
+[< 09 Multi-Agent](09-multi-agent.md) | [Home](../README.md) | [11 MCP, Skills & Plugins >](11-mcp-skills-plugins.md)

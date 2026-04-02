@@ -1,3 +1,5 @@
+[Home](../README.md) > 06 Prompting
+
 # 06 Prompting
 
 ### #06.01 Describe Outcomes, Not Steps
@@ -171,3 +173,7 @@ Reframe the problem before proposing any solutions."
 **Why:** Reframing forces problem understanding before solution design, which prevents building the wrong thing efficiently.
 
 ---
+
+---
+
+[< 05 Git & GitHub](05-git-and-github.md) | [Home](../README.md) | [07 Planning & Specs >](07-planning-and-specs.md)

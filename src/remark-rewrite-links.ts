@@ -17,22 +17,32 @@ export default function remarkRewriteLinks() {
         return;
       }
 
+      // README.md or ../README.md → /readme
+      if (url === "README.md" || url === "../README.md") {
+        node.url = "/readme";
+        return;
+      }
+
       // tips/01-setup.md → /01-setup
-      const tipMatch = url.match(/^tips\/(.+)\.md$/);
+      const tipMatch = url.match(/^(?:\.\.\/)?(?:tips\/)?(.+)\.md$/);
       if (tipMatch) {
-        node.url = `/${tipMatch[1]}`;
-        return;
-      }
-
-      // cheatsheet.md → /cheatsheet
-      if (url === "cheatsheet.md") {
-        node.url = "/cheatsheet";
-        return;
-      }
-
-      // SOURCES.md → /sources
-      if (url === "SOURCES.md") {
-        node.url = "/sources";
+        const name = tipMatch[1];
+        // Map known top-level files
+        if (name === "cheatsheet" || name === "Cheatsheet") {
+          node.url = "/cheatsheet";
+          return;
+        }
+        if (name === "SOURCES") {
+          node.url = "/sources";
+          return;
+        }
+        if (name === "CONTRIBUTING") {
+          // No app route for this, link to GitHub
+          node.url = "https://github.com/infiniV/ultra-instinct-claude-code/blob/main/CONTRIBUTING.md";
+          return;
+        }
+        // Everything else is a tip slug
+        node.url = `/${name}`;
         return;
       }
     });

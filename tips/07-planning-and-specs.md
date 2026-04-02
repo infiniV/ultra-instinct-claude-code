@@ -1,3 +1,5 @@
+[Home](../README.md) > 07 Planning & Specs
+
 # 07 Planning & Specs
 
 ### #07.01 Always Start with Plan Mode
@@ -204,3 +206,7 @@ data store, and communication path. This is mandatory before implementation."
 **Why:** LLMs produce significantly more complete and accurate designs when forced to visualize the system structure.
 
 ---
+
+---
+
+[< 06 Prompting](06-prompting.md) | [Home](../README.md) | [08 Testing & Verification >](08-testing-and-verification.md)

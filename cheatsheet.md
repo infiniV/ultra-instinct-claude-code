@@ -1,4 +1,6 @@
-# Claude Code Cheatsheet
+[Home](README.md) > Cheatsheet
+
+# Claude Code cheatsheet
 
 ## Launch & Sessions
 

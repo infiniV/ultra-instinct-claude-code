@@ -1,3 +1,5 @@
+[Home](../README.md) > 02 CLAUDE.md Mastery
+
 # 02 CLAUDE.md Mastery
 
 ### #02.01 The CLAUDE.md Hierarchy
@@ -254,3 +256,7 @@ alias claude-review='claude --system-prompt "$(cat ~/.claude/contexts/review.md)
 **Why:** Mode-specific prompts let you reuse one CLAUDE.md while switching behavior without editing any files.
 
 ---
+
+---
+
+[< 01 Setup](01-setup.md) | [Home](../README.md) | [03 Context Management >](03-context-management.md)

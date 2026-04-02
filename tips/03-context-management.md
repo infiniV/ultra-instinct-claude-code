@@ -1,3 +1,5 @@
+[Home](../README.md) > 03 Context Management
+
 # 03 Context Management
 
 ### #03.01 Context Is Milk
@@ -300,3 +302,7 @@ corresponding skill file before responding.
 **Why:** Plan acceptance is a designed context-cleaning mechanism -- the plan survives but exploratory noise gets removed.
 
 ---
+
+---
+
+[< 02 CLAUDE.md Mastery](02-claude-md.md) | [Home](../README.md) | [04 Commands & Shortcuts >](04-commands-and-shortcuts.md)

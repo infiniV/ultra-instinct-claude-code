@@ -1,3 +1,5 @@
+[Home](../README.md) > 14 Deep Cuts
+
 # 14 Deep Cuts (Undocumented Behaviors & Power-User Discoveries)
 
 > Community-tested tips discovered through extensive experimentation and observation.
@@ -360,3 +362,7 @@ disable-model-invocation: true
 ```
 
 **Why:** `/init` creates well-structured, minimal files that respect the character limits. It's better than hand-writing CLAUDE.md.
+
+---
+
+[< 13 Advanced Patterns](13-advanced-patterns.md) | [Home](../README.md)

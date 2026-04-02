@@ -1,3 +1,5 @@
+[Home](../README.md) > 04 Commands & Shortcuts
+
 # 04 Commands & Shortcuts
 
 ### #04.01 Essential Slash Commands
@@ -234,3 +236,7 @@ Ctrl+A         # Select all input text
 **Why:** Keyboard shortcuts eliminate the round-trip of typing commands and keep you in flow state.
 
 ---
+
+---
+
+[< 03 Context Management](03-context-management.md) | [Home](../README.md) | [05 Git & GitHub >](05-git-and-github.md)

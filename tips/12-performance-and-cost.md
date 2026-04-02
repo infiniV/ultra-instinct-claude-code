@@ -1,3 +1,5 @@
+[Home](../README.md) > 12 Performance & Cost
+
 # 12 Performance & Cost
 
 ### #12.01 Sonnet Default, Opus for Planning
@@ -308,3 +310,7 @@ ls skills/*.md | wc -l                 # Number of skills loaded
 **Why:** Microcompact extends session life without destroying context, while full compact is better for phase transitions.
 
 ---
+
+---
+
+[< 11 MCP, Skills & Plugins](11-mcp-skills-plugins.md) | [Home](../README.md) | [13 Advanced Patterns >](13-advanced-patterns.md)

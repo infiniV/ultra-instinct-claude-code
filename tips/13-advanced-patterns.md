@@ -1,3 +1,5 @@
+[Home](../README.md) > 13 Advanced Patterns
+
 # 13 Advanced Patterns
 
 ### #13.01 Docker Sandbox with No Egress
@@ -319,3 +321,7 @@ def process_user_signup(email: str, name: str) -> dict:
 **Why:** Self-contained, dependency-free functions are trivially understood, tested, and modified by agents -- the ideal unit of agent-era code.
 
 ---
+
+---
+
+[< 12 Performance & Cost](12-performance-and-cost.md) | [Home](../README.md) | [14 Deep Cuts >](14-internals.md)
