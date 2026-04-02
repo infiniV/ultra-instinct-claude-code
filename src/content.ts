@@ -45,20 +45,40 @@ const tipMeta: Record<string, { title: string; icon: string; section: string; co
   "06-prompting": { title: "Prompting", icon: "06", section: "Workflows", count: 12 },
   "07-planning-and-specs": { title: "Planning & Specs", icon: "07", section: "Workflows", count: 13 },
   "08-testing-and-verification": { title: "Testing & Verification", icon: "08", section: "Quality", count: 11 },
-  "09-multi-agent": { title: "Agents & Orchestration", icon: "09", section: "Advanced", count: 13 },
-  "10-hooks-and-automation": { title: "Hooks & Automation", icon: "10", section: "Advanced", count: 14 },
+  "14-security": { title: "Security & Permissions", icon: "14", section: "Quality", count: 8 },
+  "09-multi-agent": { title: "Agents & Orchestration", icon: "09", section: "Multi-Agent", count: 13 },
+  "10-hooks-and-automation": { title: "Hooks & Automation", icon: "10", section: "Multi-Agent", count: 14 },
   "11-skills-and-marketplace": { title: "Skills & Marketplace", icon: "11", section: "Ecosystem", count: 10 },
   "12-mcp-and-tools": { title: "MCP & Tools", icon: "12", section: "Ecosystem", count: 8 },
   "13-performance-and-cost": { title: "Performance & Cost", icon: "13", section: "Optimization", count: 15 },
-  "14-security": { title: "Security & Permissions", icon: "14", section: "Quality", count: 8 },
-  "15-advanced-patterns": { title: "Advanced Patterns", icon: "15", section: "Expert", count: 9 },
+  "15-advanced-patterns": { title: "Advanced Patterns", icon: "15", section: "Optimization", count: 9 },
 };
+
+// Explicit section order so sidebar groups render correctly.
+// tipMeta keys listed in display order (not alphabetical).
+const sectionOrder = [
+  "01-setup",
+  "02-claude-md",
+  "03-context-management",
+  "04-commands-and-shortcuts",
+  "05-git-and-github",
+  "06-prompting",
+  "07-planning-and-specs",
+  "08-testing-and-verification",
+  "14-security",
+  "09-multi-agent",
+  "10-hooks-and-automation",
+  "11-skills-and-marketplace",
+  "12-mcp-and-tools",
+  "13-performance-and-cost",
+  "15-advanced-patterns",
+];
 
 // Build the tips array
 export const tips: TipEntry[] = [];
 
 // Add README first
-for (const [path, importFn] of Object.entries(readmeModule)) {
+for (const [, importFn] of Object.entries(readmeModule)) {
   tips.push({
     slug: "readme",
     title: "Overview",
@@ -68,24 +88,35 @@ for (const [path, importFn] of Object.entries(readmeModule)) {
   });
 }
 
-// Add tip files
-for (const [path, importFn] of Object.entries(tipModules)) {
-  const filename = path.split("/").pop()?.replace(".md", "") || "";
-  const meta = tipMeta[filename];
-  if (meta) {
-    tips.push({
-      slug: filename,
-      title: meta.title,
-      icon: meta.icon,
-      section: meta.section,
-      count: meta.count,
-      component: lazy(importFn),
-    });
-  }
+// Add tip files in explicit order
+for (const slug of sectionOrder) {
+  const path = Object.keys(tipModules).find((p) => p.endsWith(`/${slug}.md`));
+  if (!path) continue;
+  const meta = tipMeta[slug];
+  if (!meta) continue;
+  tips.push({
+    slug,
+    title: meta.title,
+    icon: meta.icon,
+    section: meta.section,
+    count: meta.count,
+    component: lazy(tipModules[path]),
+  });
+}
+
+// Add plugins directory (in Ecosystem, not Reference — keeps it visible)
+for (const [, importFn] of Object.entries(pluginsModule)) {
+  tips.push({
+    slug: "plugins",
+    title: "Plugins Directory",
+    icon: "\u{1F4E6}",
+    section: "Ecosystem",
+    component: lazy(importFn),
+  });
 }
 
 // Add cheatsheet
-for (const [path, importFn] of Object.entries(cheatsheetModule)) {
+for (const [, importFn] of Object.entries(cheatsheetModule)) {
   tips.push({
     slug: "cheatsheet",
     title: "Cheatsheet",
@@ -95,19 +126,8 @@ for (const [path, importFn] of Object.entries(cheatsheetModule)) {
   });
 }
 
-// Add plugins directory
-for (const [path, importFn] of Object.entries(pluginsModule)) {
-  tips.push({
-    slug: "plugins",
-    title: "Plugins & Skills",
-    icon: "\u{1F4E6}",
-    section: "Reference",
-    component: lazy(importFn),
-  });
-}
-
 // Add sources
-for (const [path, importFn] of Object.entries(sourcesModule)) {
+for (const [, importFn] of Object.entries(sourcesModule)) {
   tips.push({
     slug: "sources",
     title: "Sources",

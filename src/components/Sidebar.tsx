@@ -63,18 +63,18 @@ interface SidebarProps {
 
 function useSectionedTips() {
   return useMemo(() => {
-    const seen = new Set<string>();
-    const groups: { section: string; items: typeof tips }[] = [];
+    const groupMap = new Map<string, typeof tips>();
+    const order: string[] = [];
 
     for (const tip of tips) {
       const section = tip.section || "Guide";
-      if (!seen.has(section)) {
-        seen.add(section);
-        groups.push({ section, items: [] });
+      if (!groupMap.has(section)) {
+        groupMap.set(section, []);
+        order.push(section);
       }
-      groups[groups.length - 1].items.push(tip);
+      groupMap.get(section)!.push(tip);
     }
-    return groups;
+    return order.map((section) => ({ section, items: groupMap.get(section)! }));
   }, []);
 }
 
@@ -187,7 +187,7 @@ export default function Sidebar({ open, onClose, dark, onToggleTheme, onOpenSear
 
       {/* Footer */}
       <div className="px-4 py-3 border-t border-notion-border text-[0.6875rem] text-notion-secondary">
-        140 tips curated from 17+ repos
+        176 tips from 17 repos
       </div>
     </aside>
   );
