@@ -185,11 +185,19 @@ export default function TipPage({ tip }: TipPageProps) {
     <article>
       {/* Banner on overview page */}
       {tip.slug === "readme" && (
-        <img
-          src="/banner.png"
-          alt="Ultra Instinct Claude Code"
-          className="w-full rounded-lg mb-8"
-        />
+        <picture>
+          <source srcSet="/banner.webp" type="image/webp" />
+          <img
+            src="/banner.png"
+            alt="Ultra Instinct Claude Code"
+            className="w-full rounded-lg mb-8"
+            loading="eager"
+            fetchPriority="high"
+            decoding="async"
+            width={1400}
+            height={782}
+          />
+        </picture>
       )}
 
       {/* Breadcrumb */}
