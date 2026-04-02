@@ -1,7 +1,9 @@
-# Ultra Instinct Claude Code - Implementation Guide
-# Feed this to Claude Code: "Read llms.txt and implement these tips for my project"
+# Ultra Instinct Claude Code -- tips, best practices & cheat sheet
+# Feed this to Claude Code: "Read llms.txt and apply these tips to my project"
 # Source: https://github.com/infiniV/ultra-instinct-claude-code
-# 140 tips from 17+ repos with 130k+ combined stars
+# 140 tips from 17 repos (130k+ combined stars), sorted by impact
+# Covers: setup, CLAUDE.md, context window, prompting, planning,
+#          testing, git worktrees, multi-agent, hooks, MCP, cost optimization
 
 ---
 

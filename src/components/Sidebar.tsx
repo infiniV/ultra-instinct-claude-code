@@ -22,6 +22,8 @@ import {
   Sun,
   Moon,
   MagnifyingGlass,
+  GithubLogo,
+  Star,
   type IconProps,
 } from "@phosphor-icons/react";
 
@@ -80,7 +82,7 @@ export default function Sidebar({ open, onClose, dark, onToggleTheme, onOpenSear
       className={`
         fixed lg:static inset-y-0 left-0 z-50
         w-[260px] bg-notion-sidebar border-r border-notion-border
-        flex flex-col overflow-y-auto
+        flex flex-col
         transition-transform lg:transition-none
         ${open ? "translate-x-0" : "-translate-x-full lg:translate-x-0"}
       `}
@@ -121,7 +123,7 @@ export default function Sidebar({ open, onClose, dark, onToggleTheme, onOpenSear
       </div>
 
       {/* Navigation */}
-      <nav className="flex-1 px-2 pb-4" aria-label="Tips navigation">
+      <nav className="flex-1 overflow-y-auto px-2 pb-4" aria-label="Tips navigation">
         {sections.map(({ section, items }, groupIndex) => (
           <div key={section} className={groupIndex > 0 ? "mt-5" : ""}>
             <div className="text-[0.6875rem] font-semibold text-notion-secondary uppercase tracking-wider px-2 mb-1">
@@ -157,6 +159,27 @@ export default function Sidebar({ open, onClose, dark, onToggleTheme, onOpenSear
           </div>
         ))}
       </nav>
+
+      {/* GitHub card */}
+      <div className="px-3 pb-2">
+        <a
+          href="https://github.com/infiniV/ultra-instinct-claude-code"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="flex items-center gap-2.5 px-3 py-2.5 rounded-lg border border-notion-border bg-notion-bg/50 hover:border-notion-secondary/40 hover:bg-notion-hover transition-colors group"
+        >
+          <GithubLogo size={18} weight="fill" className="shrink-0 text-notion-secondary group-hover:text-notion-text transition-colors" aria-hidden="true" />
+          <div className="flex-1 min-w-0">
+            <span className="block text-[0.75rem] font-semibold text-notion-text leading-tight">
+              Star on GitHub
+            </span>
+            <span className="block text-[0.625rem] text-notion-secondary leading-tight mt-0.5">
+              Help others discover these tips
+            </span>
+          </div>
+          <Star size={14} weight="fill" className="shrink-0 text-amber-400 group-hover:scale-110 transition-transform" aria-hidden="true" />
+        </a>
+      </div>
 
       {/* Footer */}
       <div className="px-4 py-3 border-t border-notion-border text-[0.6875rem] text-notion-secondary">
