@@ -1,6 +1,7 @@
 import { Suspense, useEffect, useRef, useCallback } from "react";
-import { useNavigate, useLocation } from "react-router-dom";
-import type { TipEntry } from "../content";
+import { useNavigate, useLocation, Link } from "react-router-dom";
+import { CaretLeft, CaretRight, House } from "@phosphor-icons/react";
+import { tips, type TipEntry } from "../content";
 
 const SITE_NAME = "Ultra Instinct Claude Code";
 const SITE_URL = "https://ultra-instinct-claude-code.vercel.app";
@@ -91,6 +92,148 @@ function useSEO(tip: TipEntry) {
   }, [tip.slug, tip.title, tip.section, tip.count]);
 }
 
+/** Hide the raw markdown breadcrumb + bottom nav, enhance level/impact blockquotes */
+function useEnhanceMdx(contentRef: React.RefObject<HTMLDivElement | null>) {
+  const location = useLocation();
+  useEffect(() => {
+    const el = contentRef.current;
+    if (!el) return;
+
+    const enhance = () => {
+      // Hide the first paragraph if it's the breadcrumb (e.g. "Home > 02 CLAUDE.md")
+      const firstP = el.querySelector(".mdx-content > p:first-child");
+      if (firstP && firstP.textContent?.includes(">") && firstP.querySelector('a[href="/readme"]')) {
+        (firstP as HTMLElement).style.display = "none";
+      }
+
+      // Hide the bottom nav paragraph (contains "< prev | Home | next >")
+      const allPs = el.querySelectorAll(".mdx-content > p");
+      const lastP = allPs[allPs.length - 1];
+      if (lastP && lastP.querySelector('a[href="/readme"]') && lastP.textContent?.includes("|")) {
+        (lastP as HTMLElement).style.display = "none";
+        // Also hide the preceding <hr> elements
+        let prev = lastP.previousElementSibling;
+        let hrCount = 0;
+        while (prev && prev.tagName === "HR" && hrCount < 2) {
+          (prev as HTMLElement).style.display = "none";
+          prev = prev.previousElementSibling;
+          hrCount++;
+        }
+      }
+
+      // Style level/impact blockquotes as pill badges
+      // IMPORTANT: Never remove/replace React-owned nodes — only hide + insert siblings
+      el.querySelectorAll("blockquote").forEach((bq) => {
+        if ((bq as HTMLElement).dataset.enhanced) return;
+        const text = bq.textContent || "";
+        if (!text.includes("Level:") || !text.includes("Impact:")) return;
+
+        const levelMatch = text.match(/Level:\s*(Beginner|Intermediate|Advanced|Expert)/);
+        const impactMatch = text.match(/Impact:\s*(High|Medium|Low)/);
+        if (!levelMatch || !impactMatch) return;
+
+        const level = levelMatch[1];
+        const impact = impactMatch[1];
+
+        const levelColors: Record<string, string> = {
+          Beginner: "var(--color-notion-tag-green)",
+          Intermediate: "var(--color-notion-tag-blue)",
+          Advanced: "var(--color-notion-tag-orange)",
+          Expert: "var(--color-notion-tag-red)",
+        };
+        const impactColors: Record<string, string> = {
+          High: "var(--color-notion-tag-red)",
+          Medium: "var(--color-notion-tag-orange)",
+          Low: "var(--color-notion-tag-blue)",
+        };
+
+        // Hide the original blockquote (don't remove it — React owns it)
+        (bq as HTMLElement).style.display = "none";
+        (bq as HTMLElement).dataset.enhanced = "true";
+
+        // Insert badge row after the hidden blockquote
+        const wrapper = document.createElement("div");
+        wrapper.className = "tip-badge-row";
+        wrapper.setAttribute("data-badge", "true");
+        wrapper.innerHTML = `
+          <span class="tip-badge" style="background:${levelColors[level]}">
+            <span class="tip-badge-label">Level</span> ${level}
+          </span>
+          <span class="tip-badge" style="background:${impactColors[impact]}">
+            <span class="tip-badge-label">Impact</span> ${impact}
+          </span>
+        `;
+        bq.after(wrapper);
+      });
+    };
+
+    // Try immediately, then observe for lazy content
+    enhance();
+    const observer = new MutationObserver(enhance);
+    observer.observe(el, { childList: true, subtree: true });
+    const timeout = setTimeout(() => observer.disconnect(), 3000);
+    return () => {
+      observer.disconnect();
+      clearTimeout(timeout);
+      // Clean up injected badge nodes so React doesn't trip on them
+      el.querySelectorAll("[data-badge]").forEach((n) => n.remove());
+    };
+  }, [location.pathname, contentRef]);
+}
+
+function TipNav({ currentSlug }: { currentSlug: string }) {
+  const idx = tips.findIndex((t) => t.slug === currentSlug);
+  if (idx === -1 || currentSlug === "readme") return null;
+
+  const prev = idx > 0 ? tips[idx - 1] : null;
+  const next = idx < tips.length - 1 ? tips[idx + 1] : null;
+
+  // Skip readme as prev (it's the overview, not a tip)
+  const prevTip = prev && prev.slug !== "readme" ? prev : null;
+
+  return (
+    <nav className="flex items-stretch gap-3 mt-12 pt-6 border-t border-notion-border" aria-label="Tip navigation">
+      {prevTip ? (
+        <Link
+          to={`/${prevTip.slug}`}
+          className="flex-1 flex items-center gap-3 px-4 py-3 rounded-lg border border-notion-border hover:bg-notion-hover transition-colors group no-underline"
+        >
+          <CaretLeft size={16} weight="bold" className="text-notion-secondary shrink-0 group-hover:text-notion-text transition-colors" />
+          <div className="min-w-0">
+            <span className="block text-[0.625rem] text-notion-secondary uppercase tracking-wider font-medium">Previous</span>
+            <span className="block text-[0.8125rem] text-notion-text font-medium truncate">{prevTip.title}</span>
+          </div>
+        </Link>
+      ) : (
+        <div className="flex-1" />
+      )}
+
+      <Link
+        to="/readme"
+        className="flex items-center justify-center w-11 rounded-lg border border-notion-border hover:bg-notion-hover transition-colors"
+        aria-label="Go to overview"
+      >
+        <House size={16} weight="bold" className="text-notion-secondary" />
+      </Link>
+
+      {next ? (
+        <Link
+          to={`/${next.slug}`}
+          className="flex-1 flex items-center justify-end gap-3 px-4 py-3 rounded-lg border border-notion-border hover:bg-notion-hover transition-colors group text-right no-underline"
+        >
+          <div className="min-w-0">
+            <span className="block text-[0.625rem] text-notion-secondary uppercase tracking-wider font-medium">Next</span>
+            <span className="block text-[0.8125rem] text-notion-text font-medium truncate">{next.title}</span>
+          </div>
+          <CaretRight size={16} weight="bold" className="text-notion-secondary shrink-0 group-hover:text-notion-text transition-colors" />
+        </Link>
+      ) : (
+        <div className="flex-1" />
+      )}
+    </nav>
+  );
+}
+
 function LoadingSkeleton() {
   return (
     <div className="space-y-4" role="status" aria-label="Loading content">
@@ -124,8 +267,10 @@ export default function TipPage({ tip }: TipPageProps) {
   useSEO(tip);
   const Content = tip.component;
   const contentRef = useRef<HTMLDivElement>(null);
+  const articleRef = useRef<HTMLDivElement>(null);
   const navigate = useNavigate();
   const location = useLocation();
+  useEnhanceMdx(articleRef);
 
   // Intercept clicks on <a> tags inside MDX content for client-side routing
   const handleClick = useCallback(
@@ -182,7 +327,7 @@ export default function TipPage({ tip }: TipPageProps) {
   }, [location.pathname, location.hash]);
 
   return (
-    <article>
+    <article ref={articleRef}>
       {/* Banner on overview page */}
       {tip.slug === "readme" && (
         <picture>
@@ -211,6 +356,9 @@ export default function TipPage({ tip }: TipPageProps) {
           <Content />
         </Suspense>
       </div>
+
+      {/* Prev / Next navigation */}
+      <TipNav currentSlug={tip.slug} />
     </article>
   );
 }
