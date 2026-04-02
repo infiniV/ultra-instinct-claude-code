@@ -30,15 +30,40 @@ export default function TableOfContents() {
   const [activeId, setActiveId] = useState<string>("");
   const location = useLocation();
 
-  // Extract headings after content renders
+  // Extract headings after content renders (using MutationObserver for lazy content)
   useEffect(() => {
-    const timer = setTimeout(() => {
+    setHeadings([]);
+
+    const extract = () => {
       const content = document.querySelector(".mdx-content");
       if (content) {
-        setHeadings(extractHeadings(content));
+        const found = extractHeadings(content);
+        if (found.length > 0) {
+          setHeadings(found);
+          return true;
+        }
       }
-    }, 200);
-    return () => clearTimeout(timer);
+      return false;
+    };
+
+    // Try immediately (content may already be loaded for client-side nav)
+    if (extract()) return;
+
+    // Watch for content appearing (handles Suspense lazy loading)
+    const target = document.querySelector(".mdx-content");
+    if (!target) return;
+
+    const observer = new MutationObserver(() => {
+      if (extract()) observer.disconnect();
+    });
+    observer.observe(target, { childList: true, subtree: true });
+
+    // Cleanup after 5s max
+    const timeout = setTimeout(() => observer.disconnect(), 5000);
+    return () => {
+      observer.disconnect();
+      clearTimeout(timeout);
+    };
   }, [location.pathname]);
 
   // Track active heading with IntersectionObserver

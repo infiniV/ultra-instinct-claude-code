@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://ultra-instinct-claude-code.vercel.app/sitemap.xml
