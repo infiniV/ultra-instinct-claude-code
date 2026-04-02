@@ -331,7 +331,6 @@ export default function TipPage({ tip }: TipPageProps) {
       {/* Banner on overview page */}
       {tip.slug === "readme" && (
         <picture>
-          <source srcSet="/banner.webp" type="image/webp" />
           <img
             src="/banner.png"
             alt="Ultra Instinct Claude Code"
