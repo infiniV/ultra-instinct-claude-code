@@ -19,6 +19,7 @@ import {
   ShieldCheck,
   BracketsCurly,
   ListChecks,
+  Package,
   Books,
   Sun,
   Moon,
@@ -48,6 +49,7 @@ const slugIcon: Record<string, PhosphorIcon> = {
   "14-security": ShieldCheck,
   "15-advanced-patterns": BracketsCurly,
   "cheatsheet": ListChecks,
+  "plugins": Package,
   "sources": Books,
 };
 

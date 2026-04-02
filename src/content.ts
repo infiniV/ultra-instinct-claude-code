@@ -30,6 +30,11 @@ const sourcesModule = import.meta.glob<{ default: ComponentType }>(
   { eager: false }
 );
 
+const pluginsModule = import.meta.glob<{ default: ComponentType }>(
+  "../plugins.md",
+  { eager: false }
+);
+
 // Map of file patterns to metadata
 const tipMeta: Record<string, { title: string; icon: string; section: string; count: number }> = {
   "01-setup": { title: "Setup", icon: "01", section: "Getting Started", count: 11 },
@@ -85,6 +90,17 @@ for (const [path, importFn] of Object.entries(cheatsheetModule)) {
     slug: "cheatsheet",
     title: "Cheatsheet",
     icon: "\u{1F4CB}",
+    section: "Reference",
+    component: lazy(importFn),
+  });
+}
+
+// Add plugins directory
+for (const [path, importFn] of Object.entries(pluginsModule)) {
+  tips.push({
+    slug: "plugins",
+    title: "Plugins & Skills",
+    icon: "\u{1F4E6}",
     section: "Reference",
     component: lazy(importFn),
   });

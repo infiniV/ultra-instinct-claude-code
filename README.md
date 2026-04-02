@@ -12,6 +12,7 @@
 <p align="center">
   <a href="https://ultra-instinct-claude-code.vercel.app/">Browse all tips</a> &middot;
   <a href="cheatsheet.md">Cheat sheet</a> &middot;
+  <a href="plugins.md">Plugins & skills</a> &middot;
   <a href="llms.txt">llms.txt</a> &middot;
   <a href="SOURCES.md">Sources</a>
 </p>
