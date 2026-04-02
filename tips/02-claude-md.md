@@ -227,7 +227,96 @@ grep -rh "MUST\|NEVER\|ALWAYS" CLAUDE.md .claude/skills/ rules/ \
 
 ---
 
-### #02.10 Dynamic System Prompt Injection
+### #02.10 CLAUDE.md Has a Character Limit
+
+> **Level:** Beginner | **Impact:** High
+
+**Problem:** Your CLAUDE.md is silently truncated and you do not know it.
+
+**Do this:**
+```bash
+# Check your CLAUDE.md size:
+wc -c CLAUDE.md
+# Safe limit: ~4,000 chars per file
+# Total across ALL instruction files: ~12,000 chars
+
+# If too long, split into focused files:
+# .claude/rules/testing.md
+# .claude/rules/style.md
+# .claude/rules/architecture.md
+```
+
+**Why:** Content beyond these limits gets silently truncated -- if your CLAUDE.md is 5K chars, the last 1K disappears.
+
+---
+
+### #02.11 Use @imports for Large References
+
+> **Level:** Beginner | **Impact:** High
+
+**Problem:** You need to reference large docs (API specs, architecture) but cannot fit them in 4K chars.
+
+**Do this:**
+```markdown
+# In your CLAUDE.md:
+For API patterns, see @docs/api-conventions.md
+For architecture, see @docs/architecture.md
+For testing, see @docs/testing-guide.md
+```
+
+**Why:** The `@path/to/file` syntax inlines content on demand without bloating CLAUDE.md -- the character limit applies to the file itself, not imported content.
+
+---
+
+### #02.12 CLAUDE.md Can Override Default Behaviors
+
+> **Level:** Advanced | **Impact:** High
+
+**Problem:** Claude refuses to create files or add abstractions, even when you want it to.
+
+**Do this:**
+```markdown
+# Claude Code has conservative defaults like:
+# - Avoid creating files unless required
+# - Keep changes tightly scoped
+# - Don't add speculative abstractions
+
+# Your CLAUDE.md can explicitly override these:
+When implementing features, create separate files for each concern.
+Create test files alongside every new source file.
+Use abstraction layers between modules.
+```
+
+**Why:** CLAUDE.md instructions load after the default behavioral rules -- explicit overrides take precedence.
+
+---
+
+### #02.13 Use a Modular rules/ Folder
+
+> **Level:** Intermediate | **Impact:** Medium
+
+**Problem:** One CLAUDE.md file mixes security rules, style guides, testing conventions, and architecture notes into a wall of text.
+
+**Do this:**
+```
+# Instead of one monolithic CLAUDE.md, use:
+.claude/rules/security.md      # Input validation, auth patterns
+.claude/rules/style.md         # Naming, formatting, imports
+.claude/rules/testing.md       # Test commands, coverage targets
+.claude/rules/architecture.md  # Module boundaries, data flow
+
+# Each file supports paths: frontmatter to scope when it loads:
+---
+paths:
+  - "src/api/**"
+---
+```
+
+**Why:** Modular rules load only when relevant files are touched, reducing token cost and keeping each concern focused.
+
+---
+
+### #02.14 Dynamic System Prompt Injection
 
 > **Level:** Expert | **Impact:** Medium
 

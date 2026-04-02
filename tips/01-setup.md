@@ -95,23 +95,30 @@ alias ch='claude --chrome'
 
 ---
 
-### #01.05 Customize Your Status Line
+### #01.05 Enable Sandbox Mode
 
-> **Level:** Intermediate | **Impact:** Low
+> **Level:** Intermediate | **Impact:** High
 
-**Problem:** The default status bar hides useful info like the active model and git branch.
+**Problem:** Running Claude Code with full filesystem and network access feels risky, but Docker is overkill for most cases.
 
 **Do this:**
 ```jsonc
-// In ~/.claude/settings.json
+// In .claude/settings.json
 {
-  "statusLine": {
-    "command": "echo \"$(git branch --show-current 2>/dev/null) | $CLAUDE_MODEL\""
+  "sandbox": {
+    "enabled": true,
+    "network": {
+      "allowedDomains": ["api.github.com", "registry.npmjs.org"]
+    },
+    "filesystem": {
+      "denyRead": ["~/.ssh/**", "~/.aws/**"],
+      "allowWrite": ["./**"]
+    }
   }
 }
 ```
 
-**Why:** A glanceable status line keeps you aware of your current model and branch without running extra commands.
+**Why:** Built-in sandboxing restricts file and network access without Docker -- reduces permission prompts while maintaining safety.
 
 ---
 
@@ -170,6 +177,84 @@ whisper-stream | claude -p
 ```
 
 **Why:** These three commands confirm everything is working and surface quota issues before they block you.
+
+---
+
+### #01.09 Bootstrap with /init
+
+> **Level:** Beginner | **Impact:** High
+
+**Problem:** You manually create CLAUDE.md from scratch and miss important conventions.
+
+**Do this:**
+```
+# Run in any project:
+/init
+
+# It does 8 phases:
+# 1. Ask what to set up (CLAUDE.md, skills, hooks)
+# 2. Explore codebase (reads manifests, CI, formatters, existing configs)
+# 3. Interview you to fill gaps
+# 4. Write CLAUDE.md (respects character limits)
+# 5. Write CLAUDE.local.md (gitignored, personal)
+# 6. Create skills
+# 7. Suggest optimizations (gh CLI, linting hooks)
+# 8. Summary and next steps
+
+# It even detects and imports from:
+# .cursor/rules, .cursorrules, .github/copilot-instructions.md,
+# .windsurfrules, .clinerules, AGENTS.md
+```
+
+**Why:** `/init` creates well-structured, minimal files that respect the character limits -- better than hand-writing CLAUDE.md.
+
+---
+
+### #01.10 Custom Agent Definitions
+
+> **Level:** Intermediate | **Impact:** High
+
+**Problem:** You want specialized agents (reviewers, architects, explorers) but only have generic subagents.
+
+**Do this:**
+```markdown
+# Create .claude/agents/reviewer.md
+---
+name: reviewer
+description: Review code changes for bugs and security issues
+model: sonnet
+tools: Read, Grep, Glob
+---
+
+Review the current git diff for bugs, security issues, and 
+style violations. Be adversarial. Report only high-confidence findings.
+```
+```bash
+# Launch it:
+claude --agent=reviewer
+# Or reference in conversation: @reviewer
+```
+
+**Why:** Custom agents with scoped tools and models let you build a team of specialists instead of one generalist.
+
+---
+
+### #01.11 Headless Fast Mode with --bare
+
+> **Level:** Advanced | **Impact:** Medium
+
+**Problem:** Scripts and CI pipelines waste time loading hooks, skills, MCPs, and CLAUDE.md on every `claude -p` call.
+
+**Do this:**
+```bash
+# Skip all loading for raw API speed
+ANTHROPIC_API_KEY=sk-ant-xxx claude --bare -p "explain this function" < code.py
+
+# ~14% faster to first API request
+# Skips: hooks, LSP, plugin sync, skill walks, CLAUDE.md, auto-memory
+```
+
+**Why:** In automation pipelines where you control the prompt completely, `--bare` eliminates startup overhead.
 
 ---
 

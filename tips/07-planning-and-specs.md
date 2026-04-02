@@ -207,6 +207,77 @@ data store, and communication path. This is mandatory before implementation."
 
 ---
 
+### #07.11 Vertical Slices Over Horizontal Phases
+
+> **Level:** Intermediate | **Impact:** High
+
+**Problem:** "Phase 1: All models, Phase 2: All APIs, Phase 3: All frontend" creates cross-phase dependencies that break parallelism.
+
+**Do this:**
+```
+# Bad: Horizontal slicing
+# Phase 1: All database models
+# Phase 2: All API endpoints
+# Phase 3: All frontend components
+
+# Good: Vertical slicing
+# Phase 1: User auth (model + API + UI) end-to-end
+# Phase 2: User profile (model + API + UI) end-to-end
+# Phase 3: Settings page (model + API + UI) end-to-end
+
+# Each vertical slice:
+# - Can be tested independently
+# - Can run in parallel with other slices
+# - Delivers working functionality per phase
+```
+
+**Why:** Vertical slices have fewer cross-phase dependencies, parallelize better, and each phase delivers testable functionality.
+
+---
+
+### #07.12 Confidence Check Before Starting
+
+> **Level:** Advanced | **Impact:** High
+
+**Problem:** Claude dives into implementation with hidden uncertainty and produces wrong output that takes longer to fix than to plan.
+
+**Do this:**
+```
+"Before writing any code, rate your confidence in this implementation
+on a scale of 1-10 and explain what you're unsure about."
+
+# Decision matrix:
+# >= 9: Proceed with implementation
+# 7-8: Present alternatives, ask for clarification on uncertain parts
+# < 7: Stop. Ask specific questions. Do NOT start coding.
+```
+
+**Why:** A 100-token confidence check prevents 5,000+ tokens of wrong implementation -- the cheapest quality gate available.
+
+---
+
+### #07.13 Write a Design Discussion Document First
+
+> **Level:** Expert | **Impact:** Medium
+
+**Problem:** Plans go straight from requirements to implementation, skipping the messy thinking that catches design flaws.
+
+**Do this:**
+```
+"Before writing the implementation plan, write a ~200-line Design Discussion
+document that covers:
+1. What you found in the codebase (evidence, not assumptions)
+2. What you intend to build and why this approach over alternatives
+3. What questions or risks you see
+4. Proposed file structure and key interfaces
+
+I'll review this before you write any code."
+```
+
+**Why:** A design doc forces the model to brain-dump its reasoning into a reviewable format -- catching flawed assumptions before they become flawed code.
+
+---
+
 ---
 
 [< 06 Prompting](06-prompting.md) | [Home](../README.md) | [08 Testing & Verification >](08-testing-and-verification.md)

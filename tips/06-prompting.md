@@ -174,6 +174,52 @@ Reframe the problem before proposing any solutions."
 
 ---
 
+### #06.11 Instruction Budget: ~150 Rules Max
+
+> **Level:** Advanced | **Impact:** High
+
+**Problem:** Your CLAUDE.md has 200 rules, plus skills, plus system prompt, plus tools -- and Claude starts ignoring things.
+
+**Do this:**
+```
+# Frontier LLMs follow ~150-200 instructions consistently
+# Beyond that, adherence drops unpredictably
+
+# Audit your instruction count:
+# CLAUDE.md rules + skill instructions + system prompt + tool schemas
+
+# If over 150 total:
+# 1. Split mega-prompts into focused stages (under 40 instructions each)
+# 2. Use skills that load on-demand instead of always-on rules
+# 3. Remove redundant or obvious instructions
+```
+
+**Why:** There is a real instruction budget -- past ~150 rules, the model starts silently dropping instructions. Fewer, sharper rules beat many vague ones.
+
+---
+
+### #06.12 Assumptions Mode Over Interview Mode
+
+> **Level:** Advanced | **Impact:** Medium
+
+**Problem:** The interview pattern asks 15-20 questions that slow you down when Claude could infer most answers from the codebase.
+
+**Do this:**
+```
+"Read the codebase first. Then present your assumptions about how to
+implement this feature -- with confidence levels (Confident/Likely/Unclear)
+and evidence from the code. I'll only correct what's wrong."
+
+# Instead of 15-20 questions, you get:
+# - Structured assumptions with citations
+# - Only 2-4 corrections needed
+# - Faster time to implementation
+```
+
+**Why:** Codebase-first assumptions reduce interactions from ~15 to ~3 while producing better-informed implementation plans.
+
+---
+
 ---
 
 [< 05 Git & GitHub](05-git-and-github.md) | [Home](../README.md) | [07 Planning & Specs >](07-planning-and-specs.md)

@@ -9,7 +9,7 @@
 </p>
 
 <p align="center">
-  140 tips and best practices for Claude Code -- setup, prompting, context window management, CLAUDE.md, shortcuts, git worktrees, multi-agent workflows. Pulled from 17 repositories, tagged by difficulty, sorted by impact. Instead of reading five different repos, read this one.
+  176 tips and best practices for Claude Code -- setup, prompting, context management, CLAUDE.md, skills & plugin marketplace, security, multi-agent workflows, hooks. Pulled from 17 repositories, tagged by difficulty, sorted by impact. Instead of reading five different repos, read this one.
 </p>
 
 <p align="center">
@@ -32,7 +32,7 @@ We wanted something you could sit down with for 30 minutes and actually walk awa
 | Awesome-lists | Hundreds of links to sort through yourself | Hours of browsing |
 | Agent toolkits | "Install 135 agents, 35 skills, 42 commands" | Setup + learning curve |
 | Config frameworks | Meta-prompting systems that need configuration | Days of tweaking |
-| **This repo** | **140 read-and-apply tips, filtered by impact** | **30-60 min** |
+| **This repo** | **176 read-and-apply tips, filtered by impact** | **30-60 min** |
 
 We pulled from 17 sources rather than reflecting any single person's setup. When a tip showed up independently in 3+ repos, we flagged it as consensus -- those are the ones worth reading first.
 
@@ -67,20 +67,21 @@ Full list in the [Claude Code cheat sheet](cheatsheet.md) -- all commands, flags
 
 | # | Section | Tips | What's in it |
 |---|---------|------|--------------|
-| 01 | [Setup](tips/01-setup.md) | 8 | Installation, config, shell integration, model selection |
-| 02 | [CLAUDE.md Mastery](tips/02-claude-md.md) | 10 | Project memory file, structure, cascading configs, conventions |
-| 03 | [Context Management](tips/03-context-management.md) | 12 | Context window limits, /compact, /clear, session hygiene, token tracking |
-| 04 | [Commands & Shortcuts](tips/04-commands-and-shortcuts.md) | 10 | Slash commands, keyboard shortcuts, CLI flags |
-| 05 | [Git & GitHub](tips/05-git-and-github.md) | 8 | Worktrees, PRs, commits, branch workflows |
-| 06 | [Prompting](tips/06-prompting.md) | 10 | Declarative prompting tips, thinking triggers, constraint prompts |
-| 07 | [Planning & Specs](tips/07-planning-and-specs.md) | 10 | Plan mode, spec-driven dev, interview pattern, iteration |
-| 08 | [Testing & Verification](tips/08-testing-and-verification.md) | 8 | Feedback loops, TDD with Claude, linter integration |
-| 09 | [Multi-Agent](tips/09-multi-agent.md) | 10 | Subagents, parallel sessions, orchestration, task splitting |
-| 10 | [Hooks & Automation](tips/10-hooks-and-automation.md) | 10 | Pre/post hooks, file watchers, CI integration |
-| 11 | [MCP, Skills & Plugins](tips/11-mcp-skills-plugins.md) | 8 | MCP servers, custom skills, tool permissions |
-| 12 | [Performance & Cost](tips/12-performance-and-cost.md) | 12 | Token optimization, caching, model routing, cost tracking |
-| 13 | [Advanced Patterns](tips/13-advanced-patterns.md) | 10 | Meta-prompting, self-improving workflows, expert techniques |
-| 14 | [Deep Cuts](tips/14-internals.md) | 14 | Undocumented behaviors, character limits, cache zones, agent types, compaction |
+| 01 | [Setup](tips/01-setup.md) | 11 | Installation, config, model selection, sandbox, custom agents, /init |
+| 02 | [CLAUDE.md Mastery](tips/02-claude-md.md) | 14 | Project memory, hierarchy, @imports, character limits, modular rules |
+| 03 | [Context Management](tips/03-context-management.md) | 16 | Context window, /compact, handoffs, 3-file pattern, /context diagnostics |
+| 04 | [Commands & Shortcuts](tips/04-commands-and-shortcuts.md) | 14 | Slash commands, keyboard shortcuts, /branch, /teleport, session management |
+| 05 | [Git & GitHub](tips/05-git-and-github.md) | 8 | Worktrees, PRs, commits, /commit-push-pr, --from-pr |
+| 06 | [Prompting](tips/06-prompting.md) | 12 | Declarative prompting, thinking triggers, instruction budgets, assumptions mode |
+| 07 | [Planning & Specs](tips/07-planning-and-specs.md) | 13 | Plan mode, interview pattern, vertical slices, confidence checks, design docs |
+| 08 | [Testing & Verification](tips/08-testing-and-verification.md) | 11 | Feedback loops, TDD, regression gates, adversarial verification, cross-model QA |
+| 09 | [Agents & Orchestration](tips/09-multi-agent.md) | 13 | Subagents, custom agents, agent teams, Ralph loop, model routing |
+| 10 | [Hooks & Automation](tips/10-hooks-and-automation.md) | 14 | 22+ hook events, prompt-based hooks, HTTP hooks, safety guards, profiles |
+| 11 | [Skills & Marketplace](tips/11-skills-and-marketplace.md) | 10 | Skills, plugin marketplace, custom commands, Context7, skill memory |
+| 12 | [MCP & Tools](tips/12-mcp-and-tools.md) | 8 | MCP servers, tool budgets, CLI alternatives, OAuth, tool search |
+| 13 | [Performance & Cost](tips/13-performance-and-cost.md) | 15 | Token optimization, caching, PTC, model routing, cost tracking |
+| 14 | [Security & Permissions](tips/14-security.md) | 8 | Sandbox, deny rules, credential scrubbing, supply chain, enterprise |
+| 15 | [Advanced Patterns](tips/15-advanced-patterns.md) | 9 | Pipelines, self-improvement, sprint workflows, Docker sandbox |
 | -- | [Cheat sheet](cheatsheet.md) | -- | Quick-reference tables for commands and shortcuts |
 
 About 60 minutes cover-to-cover. Most people only need the beginner and intermediate sections, which takes closer to 30.

@@ -32,20 +32,21 @@ const sourcesModule = import.meta.glob<{ default: ComponentType }>(
 
 // Map of file patterns to metadata
 const tipMeta: Record<string, { title: string; icon: string; section: string; count: number }> = {
-  "01-setup": { title: "Setup", icon: "01", section: "Getting Started", count: 8 },
-  "02-claude-md": { title: "CLAUDE.md Mastery", icon: "02", section: "Configuration", count: 10 },
-  "03-context-management": { title: "Context Management", icon: "03", section: "Core Skills", count: 12 },
-  "04-commands-and-shortcuts": { title: "Commands & Shortcuts", icon: "04", section: "Core Skills", count: 10 },
+  "01-setup": { title: "Setup", icon: "01", section: "Getting Started", count: 11 },
+  "02-claude-md": { title: "CLAUDE.md Mastery", icon: "02", section: "Configuration", count: 14 },
+  "03-context-management": { title: "Context Management", icon: "03", section: "Core Skills", count: 16 },
+  "04-commands-and-shortcuts": { title: "Commands & Shortcuts", icon: "04", section: "Core Skills", count: 14 },
   "05-git-and-github": { title: "Git & GitHub", icon: "05", section: "Workflows", count: 8 },
-  "06-prompting": { title: "Prompting", icon: "06", section: "Workflows", count: 10 },
-  "07-planning-and-specs": { title: "Planning & Specs", icon: "07", section: "Workflows", count: 10 },
-  "08-testing-and-verification": { title: "Testing & Verification", icon: "08", section: "Quality", count: 8 },
-  "09-multi-agent": { title: "Multi-Agent", icon: "09", section: "Advanced", count: 10 },
-  "10-hooks-and-automation": { title: "Hooks & Automation", icon: "10", section: "Advanced", count: 10 },
-  "11-mcp-skills-plugins": { title: "MCP, Skills & Plugins", icon: "11", section: "Ecosystem", count: 8 },
-  "12-performance-and-cost": { title: "Performance & Cost", icon: "12", section: "Optimization", count: 12 },
-  "13-advanced-patterns": { title: "Advanced Patterns", icon: "13", section: "Expert", count: 10 },
-  "14-internals": { title: "Deep Cuts", icon: "14", section: "Expert", count: 14 },
+  "06-prompting": { title: "Prompting", icon: "06", section: "Workflows", count: 12 },
+  "07-planning-and-specs": { title: "Planning & Specs", icon: "07", section: "Workflows", count: 13 },
+  "08-testing-and-verification": { title: "Testing & Verification", icon: "08", section: "Quality", count: 11 },
+  "09-multi-agent": { title: "Agents & Orchestration", icon: "09", section: "Advanced", count: 13 },
+  "10-hooks-and-automation": { title: "Hooks & Automation", icon: "10", section: "Advanced", count: 14 },
+  "11-skills-and-marketplace": { title: "Skills & Marketplace", icon: "11", section: "Ecosystem", count: 10 },
+  "12-mcp-and-tools": { title: "MCP & Tools", icon: "12", section: "Ecosystem", count: 8 },
+  "13-performance-and-cost": { title: "Performance & Cost", icon: "13", section: "Optimization", count: 15 },
+  "14-security": { title: "Security & Permissions", icon: "14", section: "Quality", count: 8 },
+  "15-advanced-patterns": { title: "Advanced Patterns", icon: "15", section: "Expert", count: 9 },
 };
 
 // Build the tips array

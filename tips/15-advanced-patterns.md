@@ -1,8 +1,8 @@
-[Home](../README.md) > 13 Advanced Patterns
+[Home](../README.md) > 15 Advanced Patterns
 
-# 13 Advanced Patterns
+# 15 Advanced Patterns
 
-### #13.01 Docker Sandbox with No Egress
+### #15.01 Docker Sandbox with No Egress
 
 > **Level:** Beginner | **Impact:** High
 
@@ -33,7 +33,7 @@ docker compose up claude-sandbox
 
 ---
 
-### #13.02 Sequential Pipeline with claude -p
+### #15.02 Sequential Pipeline with claude -p
 
 > **Level:** Beginner | **Impact:** High
 
@@ -61,7 +61,7 @@ claude -p "Run the test suite and report results"
 
 ---
 
-### #13.03 SHARED_TASK_NOTES.md for Cross-Iteration Context
+### #15.03 SHARED_TASK_NOTES.md for Cross-Iteration Context
 
 > **Level:** Intermediate | **Impact:** High
 
@@ -95,7 +95,7 @@ claude -p "Read SHARED_TASK_NOTES.md for context. Implement step 2. Update the n
 
 ---
 
-### #13.04 Model Routing in Pipelines
+### #15.04 Model Routing in Pipelines
 
 > **Level:** Intermediate | **Impact:** Medium
 
@@ -124,7 +124,7 @@ claude -p --model claude-opus-4-20250514 \
 
 ---
 
-### #13.05 --allowedTools Restrictions Per Step
+### #15.05 --allowedTools Restrictions Per Step
 
 > **Level:** Intermediate | **Impact:** Medium
 
@@ -152,7 +152,7 @@ claude -p --allowedTools "Read,Bash,Grep" \
 
 ---
 
-### #13.06 Completion Signal for Loop Termination
+### #15.06 Completion Signal for Loop Termination
 
 > **Level:** Advanced | **Impact:** Medium
 
@@ -181,109 +181,7 @@ done
 
 ---
 
-### #13.07 Scan for Hidden Unicode Prompt Injection
-
-> **Level:** Advanced | **Impact:** High
-
-**Problem:** Malicious skills or hooks can contain invisible zero-width Unicode characters that inject hidden prompts.
-
-**Do this:**
-```bash
-# Scan for zero-width characters in skills, hooks, and configs:
-rg -nP '[\x{200B}\x{200C}\x{200D}\x{2060}\x{FEFF}]' \
-  skills/ hooks/ .claude/ CLAUDE.md
-
-# What to look for:
-# U+200B  Zero Width Space
-# U+200C  Zero Width Non-Joiner
-# U+200D  Zero Width Joiner
-# U+2060  Word Joiner
-# U+FEFF  Zero Width No-Break Space (BOM)
-
-# Automate as a pre-session hook:
-#!/usr/bin/env bash
-# hooks/scan-injection.sh (SessionStart)
-HITS=$(rg -cP '[\x{200B}\x{200C}\x{200D}\x{2060}\x{FEFF}]' skills/ hooks/ 2>/dev/null || true)
-if [ -n "$HITS" ]; then
-  echo "WARNING: Hidden Unicode characters found:" >&2
-  echo "$HITS" >&2
-fi
-exit 0
-```
-
-**Why:** Zero-width characters are invisible in editors but processed by the model -- treat skills and hooks as supply chain artifacts.
-
----
-
-### #13.08 Permission Deny Rules for Sensitive Paths
-
-> **Level:** Advanced | **Impact:** High
-
-**Problem:** Claude can read SSH keys, AWS credentials, and .env files unless explicitly blocked.
-
-**Do this:**
-```jsonc
-// ~/.claude/settings.json
-{
-  "permissions": {
-    "deny": [
-      "Read(~/.ssh/**)",
-      "Read(~/.aws/**)",
-      "Read(~/.gnupg/**)",
-      "Read(**/.env*)",
-      "Read(**/*credentials*)",
-      "Read(**/*secret*)",
-      "Bash(curl * | bash)",
-      "Bash(wget * | bash)"
-    ]
-  }
-}
-```
-
-**Why:** Deny rules prevent accidental exposure of secrets even if a prompt injection tricks Claude into trying to read them.
-
----
-
-### #13.09 Kill Process Groups, Not Parents
-
-> **Level:** Expert | **Impact:** Medium
-
-**Problem:** Killing a parent process leaves child processes orphaned, consuming resources or holding ports.
-
-**Do this:**
-```javascript
-// Kill entire process group, not just the parent
-const { spawn } = require('child_process');
-
-const child = spawn('npm', ['run', 'dev'], {
-  detached: true  // creates new process group
-});
-
-// Kill the entire group (negative PID):
-function cleanup() {
-  try {
-    process.kill(-child.pid, 'SIGKILL');  // note the negative PID
-  } catch (e) {
-    // process already dead
-  }
-}
-
-// Dead-man switch: if parent stops sending heartbeats, child dies
-const HEARTBEAT_INTERVAL = 30000; // 30 seconds
-setInterval(() => {
-  try {
-    child.stdin.write('heartbeat\n');
-  } catch (e) {
-    cleanup();
-  }
-}, HEARTBEAT_INTERVAL);
-```
-
-**Why:** Negative PID kills the entire process group, preventing orphaned processes that silently consume resources.
-
----
-
-### #13.10 Bacterial Code for the Agent Era
+### #15.07 Bacterial Code for the Agent Era
 
 > **Level:** Expert | **Impact:** High
 
@@ -322,6 +220,59 @@ def process_user_signup(email: str, name: str) -> dict:
 
 ---
 
+### #15.08 Operational Self-Improvement Across Sessions
+
+> **Level:** Advanced | **Impact:** High
+
+**Problem:** Each Claude session starts from scratch with no memory of what worked or failed in previous sessions.
+
+**Do this:**
+```bash
+# Pattern: auto-extract learnings at session end
+# gstack logs to ~/.gstack/projects/{slug}/learnings.jsonl
+# GSD tracks in .planning/debug/knowledge-base.md
+
+# Simpler version for any project:
+"Before we end, write what you learned about this codebase to
+.claude/learnings.md -- include gotchas, patterns that worked,
+and approaches that failed. Next session will read this file."
+
+# Good learnings pass the test:
+# "Would knowing this save 5+ minutes in a future session?"
+```
+
+**Why:** Learnings compound across sessions -- each session's discoveries make future sessions faster and more accurate.
+
 ---
 
-[< 12 Performance & Cost](12-performance-and-cost.md) | [Home](../README.md) | [14 Deep Cuts >](14-internals.md)
+### #15.09 The Sprint Workflow
+
+> **Level:** Advanced | **Impact:** High
+
+**Problem:** Ad-hoc development skips critical review stages that catch problems early.
+
+**Do this:**
+```
+# Structured sprint:
+# think → plan → build → review → test → ship → reflect
+
+# Each step feeds the next:
+# /office-hours writes a design doc
+# /plan reads the design doc and creates tasks
+# /build implements with test gates
+# /review checks for bugs and style
+# /qa runs comprehensive verification
+# /ship creates PR and updates docs
+# /reflect logs learnings for next time
+
+# Without process, 10 agents = 10 sources of chaos
+# With process, each agent knows what to do and when to stop
+```
+
+**Why:** Structured review stages with specialized personas catch category errors that a single generalist session misses.
+
+---
+
+---
+
+[< 14 Security & Permissions](14-security.md) | [Home](../README.md)

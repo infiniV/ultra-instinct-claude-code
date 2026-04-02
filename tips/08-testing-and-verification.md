@@ -163,6 +163,76 @@ REVIEW B: $(cat review-b.md)"
 
 ---
 
+### #08.09 Adversarial Verification Prompts
+
+> **Level:** Advanced | **Impact:** Medium
+
+**Problem:** Your verification steps are too lenient -- they confirm instead of challenge.
+
+**Do this:**
+```
+"Your job is not to confirm the work. Your job is to BREAK it.
+Run the actual tests. Try edge cases. Check error paths.
+If you can't break it, THEN it passes.
+
+Common verification failures to avoid:
+- Reading code and writing PASS instead of running it
+- Being fooled by circular tests or heavy mocks
+- Trusting self-reports without evidence
+- Hedging with PARTIAL instead of making a call"
+```
+
+**Why:** LLMs are naturally agreeable -- verification prompts must explicitly push against this tendency to get genuine quality gates.
+
+---
+
+### #08.10 Cross-Phase Regression Gate
+
+> **Level:** Advanced | **Impact:** High
+
+**Problem:** Phase 2 silently breaks Phase 1, and you do not discover it until everything is wired together.
+
+**Do this:**
+```bash
+# After completing each phase, run ALL prior phases' tests:
+npm test -- --grep "Phase 1"  # Re-run phase 1 tests
+npm test -- --grep "Phase 2"  # Run phase 2 tests
+
+# In CLAUDE.md:
+## Regression Gate
+After completing any phase, run the FULL test suite -- not just
+the current phase's tests. Fix any regressions before proceeding.
+```
+
+**Why:** Catching regressions at each boundary prevents error cascades that become exponentially harder to debug downstream.
+
+---
+
+### #08.11 Cross-Model QA Gate
+
+> **Level:** Expert | **Impact:** Medium
+
+**Problem:** Claude reviewing its own output has systematic blind spots it cannot see.
+
+**Do this:**
+```bash
+# Use a different model to audit Claude's work:
+# Option 1: Bouncer plugin (Gemini audits Claude via Stop hook)
+# Option 2: Manual cross-model review
+claude -p "Review this implementation for correctness: $(git diff main)" > claude-review.md
+
+# In a separate terminal with a different model:
+codex -p "Review this implementation for correctness: $(git diff main)" > codex-review.md
+
+# Compare findings:
+claude -p "Compare these reviews and highlight disagreements:
+$(cat claude-review.md) vs $(cat codex-review.md)"
+```
+
+**Why:** Different models have different failure modes -- agreement between them signals high confidence, disagreement signals areas needing human judgment.
+
+---
+
 ---
 
 [< 07 Planning & Specs](07-planning-and-specs.md) | [Home](../README.md) | [09 Multi-Agent >](09-multi-agent.md)

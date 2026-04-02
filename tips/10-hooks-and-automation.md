@@ -325,6 +325,116 @@ time echo '{"tool_name":"Bash","tool_input":{"command":"ls"}}' | ./hooks/your-ho
 
 ---
 
+### #10.11 Prompt-Based Hooks (Recommended)
+
+> **Level:** Intermediate | **Impact:** High
+
+**Problem:** Writing bash scripts for every hook is brittle and cannot understand context.
+
+**Do this:**
+```jsonc
+// In .claude/settings.json
+{
+  "hooks": {
+    "Stop": [{
+      "type": "prompt",
+      "prompt": "Check if the agent ran tests after making code changes. If not, remind it to run the test suite before claiming completion."
+    }]
+  }
+}
+```
+
+**Why:** Prompt-based hooks use Claude itself to make context-aware decisions -- officially recommended over bash scripts for flexible validation.
+
 ---
 
-[< 09 Multi-Agent](09-multi-agent.md) | [Home](../README.md) | [11 MCP, Skills & Plugins >](11-mcp-skills-plugins.md)
+### #10.12 HTTP Hooks for External Services
+
+> **Level:** Advanced | **Impact:** Medium
+
+**Problem:** You want hooks to notify Slack, log to a database, or call an external API -- but shell scripts make this painful.
+
+**Do this:**
+```jsonc
+// In .claude/settings.json
+{
+  "hooks": {
+    "Stop": [{
+      "type": "http",
+      "url": "https://your-server.com/claude-webhook",
+      "method": "POST"
+    }]
+  }
+}
+// The hook POSTs JSON with tool name, input, and session context
+// Response JSON can include additionalContext for Claude
+```
+
+**Why:** HTTP hooks connect Claude Code to any external service without writing shell scripts -- Slack notifications, analytics, approval workflows.
+
+---
+
+### #10.13 22+ Hook Events Available
+
+> **Level:** Advanced | **Impact:** Medium
+
+**Problem:** You only know about PreToolUse and PostToolUse but there are 20+ more hook events.
+
+**Do this:**
+```
+# Full hook event list:
+PreToolUse          # Before any tool runs (can block with exit 2)
+PostToolUse         # After tool runs
+Stop                # Agent finishes responding
+SubagentStop        # Subagent finishes
+SessionStart        # Session begins
+SessionEnd          # Session ends
+UserPromptSubmit    # User sends a message
+PreCompact          # Before context compaction
+PostCompact         # After context compaction
+Notification        # Permission request
+StopFailure         # Agent failed to stop cleanly
+TaskCreated         # New task created
+TaskCompleted       # Task finished
+CwdChanged          # Working directory changed
+FileChanged         # File modified on disk
+ConfigChange        # Settings changed
+PermissionDenied    # User denied a permission
+WorktreeCreate      # Worktree created
+WorktreeRemove      # Worktree removed
+```
+
+**Why:** Most people only use 3-4 events -- knowing the full list unlocks automation patterns like post-compact recovery, file watchers, and config auditing.
+
+---
+
+### #10.14 Conditional Hook Firing with if Field
+
+> **Level:** Advanced | **Impact:** Medium
+
+**Problem:** Your PreToolUse hook fires on every tool call (10,000+ per session) when it only needs to check Bash commands.
+
+**Do this:**
+```jsonc
+// In .claude/settings.json
+{
+  "hooks": {
+    "PreToolUse": [{
+      "if": "Bash(git *)",
+      "command": "./hooks/check-git-safety.sh"
+    }, {
+      "if": "Write(**/.env*)",
+      "command": "echo 'BLOCKED: cannot write to .env files' && exit 2"
+    }]
+  }
+}
+// Uses same permission rule syntax as permissions.allow/deny
+```
+
+**Why:** The `if` field filters hook execution before spawning a process -- eliminating thousands of unnecessary shell invocations per session.
+
+---
+
+---
+
+[< 09 Multi-Agent](09-multi-agent.md) | [Home](../README.md) | [11 Skills & Marketplace >](11-skills-and-marketplace.md)

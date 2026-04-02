@@ -4,3 +4,4 @@ dist
 *.local
 tsconfig.tsbuildinfo
 .env*.local
+sources/

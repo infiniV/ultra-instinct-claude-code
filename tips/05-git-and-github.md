@@ -66,35 +66,25 @@ alias zc='cd ../project-c && claude'
 
 ---
 
-### #05.04 GraphQL Queries via gh
+### #05.04 One-Step Branch, Commit, Push, PR
 
-> **Level:** Intermediate | **Impact:** Medium
+> **Level:** Beginner | **Impact:** High
 
-**Problem:** The REST API cannot fetch advanced GitHub data like PR edit history or review timelines.
+**Problem:** Creating a branch, committing, pushing, and making a PR is four separate steps.
 
 **Do this:**
-```bash
-gh api graphql -f query='
-  query {
-    repository(owner: "anthropics", name: "claude-code") {
-      pullRequest(number: 42) {
-        timelineItems(first: 50) {
-          nodes {
-            __typename
-            ... on PullRequestReview {
-              author { login }
-              state
-              submittedAt
-            }
-          }
-        }
-      }
-    }
-  }
-'
+```
+# Use the built-in plugin command:
+/commit-push-pr
+
+# What it does in one shot:
+# 1. Creates a branch (if you're on main)
+# 2. Commits with a generated message
+# 3. Pushes to remote
+# 4. Creates a PR with summary and test plan
 ```
 
-**Why:** GraphQL gives you fine-grained access to PR timelines, edit history, and review threads that REST endpoints do not expose.
+**Why:** Reducing git ceremony from 4 commands to 1 keeps you in flow state instead of doing busywork.
 
 ---
 
@@ -157,27 +147,24 @@ claude -p "Review this PR for bugs, edge cases, and design issues: $(gh pr diff 
 
 ---
 
-### #05.08 Stale Branch Warning Hook
+### #05.08 Resume Sessions Linked to PRs
 
-> **Level:** Expert | **Impact:** Low
+> **Level:** Intermediate | **Impact:** Medium
 
-**Problem:** Local branches pile up after their remote counterparts are deleted post-merge.
+**Problem:** You want to continue working on a PR but cannot find the session that created it.
 
 **Do this:**
-```jsonc
-// .claude/settings.json
-{
-  "hooks": {
-    "SessionStart": [
-      {
-        "hook": "git fetch --prune && git branch -vv | grep ': gone]' | awk '{print $1}' | while read b; do echo \"WARNING: stale branch '$b' (remote deleted)\"; done"
-      }
-    ]
-  }
-}
+```bash
+# Resume from a PR number:
+claude --from-pr 42
+
+# Or from a PR URL:
+claude --from-pr https://github.com/org/repo/pull/42
+
+# Sessions are auto-linked when created via gh pr create
 ```
 
-**Why:** Catching stale branches at session start prevents you from accidentally working on orphaned branches.
+**Why:** PR-linked sessions preserve full implementation context so you can pick up exactly where you left off.
 
 ---
 

@@ -227,6 +227,89 @@ claude -p "Run the full test suite and report failures" &
 
 ---
 
+### #09.11 Agent Frontmatter: Model, Tools, Isolation
+
+> **Level:** Intermediate | **Impact:** High
+
+**Problem:** All your subagents use the same model and have access to all tools, wasting money on simple tasks and risking unscoped writes.
+
+**Do this:**
+```yaml
+# .claude/agents/explorer.md
+---
+name: explorer
+description: Fast codebase exploration and file search
+model: haiku
+tools: Read, Grep, Glob
+---
+
+Find all files related to $ARGUMENTS and summarize the architecture.
+
+# .claude/agents/architect.md  
+---
+name: architect
+description: Architecture decisions and complex design reviews
+model: opus
+tools: Read, Grep, Glob, WebSearch
+isolation: worktree
+---
+
+Review the architecture for $ARGUMENTS. Produce a design document.
+```
+
+**Why:** Agent frontmatter lets you right-size model, tools, and isolation per task -- haiku for search, sonnet for code, opus for architecture.
+
+---
+
+### #09.12 Agent Teams (Experimental)
+
+> **Level:** Expert | **Impact:** High
+
+**Problem:** You want multiple agents collaborating on a task with shared awareness, not just isolated subagents.
+
+**Do this:**
+```bash
+# Enable the experimental feature:
+export CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1
+
+# Then in conversation:
+"Form a team: one agent explores the codebase for auth patterns,
+another reviews the current implementation for security issues,
+a third drafts the refactoring plan. Synthesize their findings."
+
+# Teammates inherit the leader's model
+# Token-intensive -- use for high-value tasks only
+```
+
+**Why:** Agent teams share context between members, enabling collaborative analysis that isolated subagents cannot achieve.
+
+---
+
+### #09.13 The Ralph Loop for Iterative Tasks
+
+> **Level:** Expert | **Impact:** Medium
+
+**Problem:** You need Claude to keep iterating until tests pass, but it stops after one attempt.
+
+**Do this:**
+```bash
+# Use the ralph-wiggum plugin:
+/ralph-loop "Fix all failing tests in src/api/"
+
+# What happens:
+# 1. Claude attempts the fix
+# 2. Stop hook blocks exit and re-feeds the prompt
+# 3. Claude checks test results, tries again if failing
+# 4. Repeats until all tests pass or --max-iterations hit
+
+# ALWAYS set a safety net:
+/ralph-loop --max-iterations 5 "..."
+```
+
+**Why:** Self-referential loops turn Claude into an autonomous fix-and-verify agent -- but always cap iterations to prevent runaway sessions.
+
+---
+
 ---
 
 [< 08 Testing & Verification](08-testing-and-verification.md) | [Home](../README.md) | [10 Hooks & Automation >](10-hooks-and-automation.md)

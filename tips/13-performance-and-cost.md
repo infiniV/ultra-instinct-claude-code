@@ -1,8 +1,8 @@
-[Home](../README.md) > 12 Performance & Cost
+[Home](../README.md) > 13 Performance & Cost
 
-# 12 Performance & Cost
+# 13 Performance & Cost
 
-### #12.01 Sonnet Default, Opus for Planning
+### #13.01 Sonnet Default, Opus for Planning
 
 > **Level:** Beginner | **Impact:** High
 
@@ -23,7 +23,7 @@
 
 ---
 
-### #12.02 Haiku Subagents Save 60-80%
+### #13.02 Haiku Subagents Save 60-80%
 
 > **Level:** Beginner | **Impact:** High
 
@@ -43,7 +43,7 @@
 
 ---
 
-### #12.03 Reduce MAX_THINKING_TOKENS
+### #13.03 Reduce MAX_THINKING_TOKENS
 
 > **Level:** Intermediate | **Impact:** Medium
 
@@ -63,7 +63,7 @@
 
 ---
 
-### #12.04 Real Session Cost Benchmarks
+### #13.04 Real Session Cost Benchmarks
 
 > **Level:** Intermediate | **Impact:** Medium
 
@@ -88,7 +88,7 @@ Multi-agent team:        $10.00 - $30.00
 
 ---
 
-### #12.05 The 5 Cost Drivers Ranked
+### #13.05 The 5 Cost Drivers Ranked
 
 > **Level:** Intermediate | **Impact:** High
 
@@ -113,7 +113,7 @@ Multi-agent team:        $10.00 - $30.00
 
 ---
 
-### #12.06 95% Cache Hit Rate (With Data)
+### #13.06 95% Cache Hit Rate (With Data)
 
 > **Level:** Advanced | **Impact:** High
 
@@ -139,7 +139,7 @@ Multi-agent team:        $10.00 - $30.00
 
 ---
 
-### #12.07 The Three Cache Killers
+### #13.07 The Three Cache Killers
 
 > **Level:** Advanced | **Impact:** High
 
@@ -169,7 +169,7 @@ Multi-agent team:        $10.00 - $30.00
 
 ---
 
-### #12.08 $200/mo Max Plan = ~$12K API Equivalent
+### #13.08 $200/mo Max Plan = ~$12K API Equivalent
 
 > **Level:** Advanced | **Impact:** Low
 
@@ -196,7 +196,7 @@ Multi-agent team:        $10.00 - $30.00
 
 ---
 
-### #12.09 The Burn Hook (Cost Anomaly Detection)
+### #13.09 The Burn Hook (Cost Anomaly Detection)
 
 > **Level:** Expert | **Impact:** Medium
 
@@ -225,7 +225,7 @@ exit 0
 
 ---
 
-### #12.10 90% Token Reduction via Bash Wrappers
+### #13.10 90% Token Reduction via Bash Wrappers
 
 > **Level:** Expert | **Impact:** High
 
@@ -252,7 +252,7 @@ gh search issues "$1" --repo "$2" --json title,url,state
 
 ---
 
-### #12.11 Context Budget Audit
+### #13.11 Context Budget Audit
 
 > **Level:** Expert | **Impact:** Medium
 
@@ -281,7 +281,7 @@ ls skills/*.md | wc -l                 # Number of skills loaded
 
 ---
 
-### #12.12 Microcompact vs Full Compact
+### #13.12 Microcompact vs Full Compact
 
 > **Level:** Expert | **Impact:** Medium
 
@@ -311,6 +311,83 @@ ls skills/*.md | wc -l                 # Number of skills loaded
 
 ---
 
+### #13.13 CLAUDE.md Lives in the Uncached Zone
+
+> **Level:** Advanced | **Impact:** Medium
+
+**Problem:** You think editing CLAUDE.md breaks the entire prompt cache.
+
+**Do this:**
+```
+# Claude Code's prompt has two zones:
+#
+# STATIC (cached across turns -- free after first turn):
+#   System instructions, tool definitions, built-in rules
+#
+# DYNAMIC (recalculated every turn -- costs tokens):
+#   Environment info, git status, CLAUDE.md, settings, skills, MCP
+#
+# Your CLAUDE.md is in the DYNAMIC zone.
+# It's always fresh but adds token cost every turn.
+# This is why keeping CLAUDE.md short saves money.
+```
+
+**Why:** Cache efficiency depends on keeping the dynamic portion small -- short, stable CLAUDE.md equals better cache hit rates and lower cost.
+
 ---
 
-[< 11 MCP, Skills & Plugins](11-mcp-skills-plugins.md) | [Home](../README.md) | [13 Advanced Patterns >](13-advanced-patterns.md)
+### #13.14 Programmatic Tool Calling (PTC)
+
+> **Level:** Expert | **Impact:** High
+
+**Problem:** Each tool call requires a separate inference pass, adding latency and tokens.
+
+**Do this:**
+```
+# PTC lets Claude write Python that orchestrates multiple tool calls
+# in ONE inference pass instead of calling tools one at a time
+
+# Results:
+# - ~37% token reduction
+# - Only stdout enters context (not full tool call overhead)
+# - Faster execution for multi-step operations
+
+# Enabled automatically for supported operations
+# Most impactful for: file scanning, bulk edits, data processing
+```
+
+**Why:** PTC batches multiple tool calls into a single inference pass -- 37% fewer tokens for multi-step operations.
+
+---
+
+### #13.15 Opus Can Be Cheaper Than Sonnet
+
+> **Level:** Intermediate | **Impact:** Medium
+
+**Problem:** You default to Sonnet to save money, but end up spending more on corrections and re-prompts.
+
+**Do this:**
+```
+# Counter-intuitive cost math:
+# Sonnet: cheaper per token, but needs more steering and correction
+# Opus: more expensive per token, but often one-shots the task
+
+# Use Opus when:
+# - Task spans 5+ files
+# - First attempt with Sonnet failed
+# - Security-critical code
+# - Architecture decisions
+
+# Use Sonnet when:
+# - Simple, well-defined edits
+# - Repetitive operations
+# - Tasks with clear test verification
+```
+
+**Why:** The most capable model often uses fewer total tokens because it needs less correction -- what seems expensive per-token can be cheaper end-to-end.
+
+---
+
+---
+
+[< 12 MCP & Tools](12-mcp-and-tools.md) | [Home](../README.md) | [14 Security & Permissions >](14-security.md)

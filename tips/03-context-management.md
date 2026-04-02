@@ -303,6 +303,99 @@ corresponding skill file before responding.
 
 ---
 
+### #03.13 The 3-File Pattern for Complex Tasks
+
+> **Level:** Intermediate | **Impact:** High
+
+**Problem:** Important decisions and findings get lost in conversation context that will be compacted or cleared.
+
+**Do this:**
+```markdown
+# For any complex task, create three files:
+# 1. task_plan.md   -- phases, progress, what's done/remaining
+# 2. findings.md    -- research results, decisions made, evidence
+# 3. progress.md    -- session log, test results, blockers
+
+# Rule: Context Window = RAM, Filesystem = Disk
+# Save findings to disk after every 2 research operations
+
+# Tell Claude:
+"Write important findings to findings.md as you go.
+ Update progress.md after each completed step."
+```
+
+**Why:** Anything not on disk is lost after compaction -- treating the filesystem as persistent memory is the single most reliable pattern across all source repos.
+
+---
+
+### #03.14 Add Compact Instructions to CLAUDE.md
+
+> **Level:** Intermediate | **Impact:** High
+
+**Problem:** Compaction loses the specific context YOU care about.
+
+**Do this:**
+```markdown
+# Add to CLAUDE.md:
+## Compact Instructions
+When summarizing this conversation, always preserve:
+- File paths and line numbers mentioned
+- Error messages and stack traces
+- Test results and their pass/fail status
+- Architectural decisions and their rationale
+- Any TODO items or next steps
+```
+
+**Why:** The compaction process looks for custom summarization instructions in your CLAUDE.md -- this directly controls what the summarizer preserves.
+
+---
+
+### #03.15 /context Shows What's Eating Your Window
+
+> **Level:** Intermediate | **Impact:** Medium
+
+**Problem:** You do not know what is consuming your context -- tools, memory, skills, or conversation history.
+
+**Do this:**
+```
+# Run at any time:
+/context
+
+# Shows:
+# - Context-heavy tools consuming the most space
+# - Memory bloat warnings
+# - Capacity warnings with specific optimization tips
+# - Same token count as verbose status line
+```
+
+**Why:** You cannot optimize what you cannot measure -- `/context` tells you exactly where tokens are going.
+
+---
+
+### #03.16 --add-dir for Multi-Repo Access
+
+> **Level:** Advanced | **Impact:** Medium
+
+**Problem:** Your frontend and backend live in separate repos but you need Claude to see both.
+
+**Do this:**
+```bash
+# At startup:
+claude --add-dir ../backend --add-dir ../shared
+
+# Or mid-session:
+/add-dir ../backend
+
+# Or in settings.json:
+{
+  "additionalDirectories": ["../backend", "../shared"]
+}
+```
+
+**Why:** Multi-directory access lets Claude read, search, and edit across repo boundaries without copy-pasting code between sessions.
+
+---
+
 ---
 
 [< 02 CLAUDE.md Mastery](02-claude-md.md) | [Home](../README.md) | [04 Commands & Shortcuts >](04-commands-and-shortcuts.md)

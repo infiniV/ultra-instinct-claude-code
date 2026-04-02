@@ -237,6 +237,93 @@ Ctrl+A         # Select all input text
 
 ---
 
+### #04.11 /branch to Fork Conversations
+
+> **Level:** Intermediate | **Impact:** High
+
+**Problem:** You want to explore an alternate approach without losing your current progress.
+
+**Do this:**
+```
+# Fork the current conversation:
+/branch
+
+# Or from CLI:
+claude --resume <session-id> --fork-session
+
+# The fork gets a full copy of your conversation context
+# Try a risky approach in the fork, keep the safe version in main
+```
+
+**Why:** Conversation forking lets you experiment freely -- if the fork fails, your original session is untouched.
+
+---
+
+### #04.12 /teleport and /remote-control
+
+> **Level:** Intermediate | **Impact:** Medium
+
+**Problem:** You started a session on your laptop but need to continue it from your phone or another device.
+
+**Do this:**
+```bash
+# Move a cloud session to your local terminal:
+claude --teleport
+
+# Control a local session from your phone/browser:
+/remote-control
+
+# Enable for all sessions in /config:
+# "Remote Control for all sessions" → enabled
+```
+
+**Why:** Session mobility means you are never stuck on one device -- start on desktop, continue on phone, finish on laptop.
+
+---
+
+### #04.13 Ctrl+B, Ctrl+G, Ctrl+S Power Keys
+
+> **Level:** Intermediate | **Impact:** Medium
+
+**Problem:** You are missing three keyboard shortcuts that dramatically improve your workflow.
+
+**Do this:**
+```
+Ctrl+B    # Background a running command (keep working while it runs)
+Ctrl+G    # Open prompt in external editor (for long/complex prompts)
+Ctrl+S    # Stash current prompt input (save it, type something else, restore later)
+
+# Set your preferred editor:
+export EDITOR=vim  # or code, nano, etc.
+```
+
+**Why:** These three shortcuts eliminate the most common workflow interruptions -- waiting, typing limits, and lost input.
+
+---
+
+### #04.14 /rename for Multi-Instance Clarity
+
+> **Level:** Beginner | **Impact:** Medium
+
+**Problem:** You have 4 Claude sessions open and cannot tell which is which.
+
+**Do this:**
+```
+# Name your sessions:
+/rename auth-feature
+/rename api-refactor
+/rename bug-fix-123
+
+# Without arguments, auto-generates a name from context:
+/rename
+
+# Also updates your terminal tab title
+```
+
+**Why:** Named sessions prevent the "which window is this?" confusion when running parallel Claude instances.
+
+---
+
 ---
 
 [< 03 Context Management](03-context-management.md) | [Home](../README.md) | [05 Git & GitHub >](05-git-and-github.md)
