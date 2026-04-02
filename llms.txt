@@ -1,429 +1,313 @@
-# Ultra Instinct Claude Code -- tips, best practices & cheat sheet
-# Feed this to Claude Code: "Read llms.txt and apply these tips to my project"
-# Source: https://github.com/infiniV/ultra-instinct-claude-code
-# 140 tips from 17 repos (130k+ combined stars), sorted by impact
-# Covers: setup, CLAUDE.md, context window, prompting, planning,
-#          testing, git worktrees, multi-agent, hooks, MCP, cost optimization
+# Ultra Instinct Claude Code
+# 176 tips from 17 repos, sorted by impact
+# Full guide: https://ultra-instinct-claude-code.vercel.app
+# GitHub: https://github.com/infiniV/ultra-instinct-claude-code
+#
+# This file is a condensed reference. Each section has a link to the full
+# tip file on GitHub if you need more detail. Read the sections relevant
+# to your current task -- don't load everything at once.
 
 ---
 
-## SETUP
+## 01 SETUP
+# Full: https://github.com/infiniV/ultra-instinct-claude-code/blob/main/tips/01-setup.md
 
-### Install & Config
-```bash
-curl -sL https://install.anthropic.com | sh   # or: npm i -g @anthropic-ai/claude-code
-claude --version                                # verify
-```
+Install: `curl -fsSL https://claude.ai/install.sh | sh` (npm is deprecated)
+Bootstrap: `/init` does 8-phase onboarding, imports from .cursor/rules, AGENTS.md, etc.
 
-### Essential aliases (~/.bashrc or ~/.zshrc)
-```bash
-alias c='claude'
-alias ch='claude --chrome'
-alias cr='claude -r'       # resume session picker
-alias cc='claude -c'       # continue last session
-```
+Aliases:
+  alias c='claude'
+  alias cc='claude -c'    # continue last session
+  alias cr='claude -r'    # resume session picker
 
-### Settings hierarchy (later overrides earlier)
-```
-~/.claude/settings.json          # global (all projects)
-.claude/settings.json            # project (committed, shared)
-.claude/settings.local.json      # local (gitignored, personal)
-```
+Settings hierarchy (later overrides earlier):
+  ~/.claude/settings.json          # global
+  .claude/settings.json            # project (commit this)
+  .claude/settings.local.json      # personal (gitignore this)
 
-### Recommended settings.json
-```jsonc
-{
-  "model": "sonnet",
-  "env": {
-    "CLAUDE_CODE_SUBAGENT_MODEL": "haiku",  // 60-80% cheaper subagents
-    "MAX_THINKING_TOKENS": "10000"           // cut reasoning cost ~70%
-  },
-  "attribution": {
-    "commit": "",
-    "pr": ""
-  }
-}
-```
+Sandbox mode (restricts file + network without Docker):
+  { "sandbox": { "enabled": true, "network": { "allowedDomains": ["api.github.com"] } } }
 
-### Custom status line (shows model, git, tokens)
-```jsonc
-// ~/.claude/settings.json
-{
-  "statusLine": {
-    "type": "command",
-    "command": "~/.claude/scripts/context-bar.sh"
-  }
-}
-```
+Custom agents (.claude/agents/reviewer.md):
+  ---
+  name: reviewer
+  model: sonnet
+  tools: Read, Grep, Glob
+  ---
+  Review git diff for bugs and security issues.
+
+Headless: `claude --bare -p "..."` skips all loading, ~14% faster for scripts/CI.
 
 ---
 
-## CLAUDE.md MASTERY
+## 02 CLAUDE.md
+# Full: https://github.com/infiniV/ultra-instinct-claude-code/blob/main/tips/02-claude-md.md
 
-### Hard limits (community-tested)
-- **4,000 chars max per file** (silently truncated beyond)
-- **12,000 chars total** across all instruction files
-- Check: `wc -c CLAUDE.md` -- must be under 4,000
+Hard limits: ~4,000 chars per file, ~12,000 total. Check: `wc -c CLAUDE.md`
+If too long, split into .claude/rules/testing.md, .claude/rules/style.md, etc.
+Each rules file supports `paths:` frontmatter to scope when it loads.
 
-### File discovery order (per directory, walks ancestors to /)
-1. CLAUDE.md
-2. CLAUDE.local.md (gitignored, personal)
-3. .claude/CLAUDE.md
-4. .claude/instructions.md
+@import syntax for large references:
+  For API patterns, see @docs/api-conventions.md
 
-### @import syntax for large references
-```markdown
-# In CLAUDE.md:
-For API patterns, see @docs/api-conventions.md
-For architecture, see @docs/architecture.md
-```
+CLAUDE.md loads AFTER system defaults, so explicit overrides work:
+  "When implementing features, create separate files for each concern."
 
-### Override system defaults explicitly
-```markdown
-# System prompt hardcodes: "Do not create files unless required"
-# CLAUDE.md comes AFTER system rules, so explicit overrides work:
-When implementing features, create separate files for each concern.
-Create test files alongside every new source file.
-```
+Add compact instructions to control what survives compaction:
+  ## Compact Instructions
+  When summarizing, always preserve: file paths, errors, test results, decisions, TODOs.
 
-### Add compact instructions
-```markdown
-## Compact Instructions
-When summarizing, always preserve:
-- File paths and line numbers
-- Error messages and stack traces
-- Test results (pass/fail)
-- Architectural decisions and rationale
-- TODO items and next steps
-```
+<important> tags for critical rules:
+  <important if="working with database">NEVER run DROP without WHERE clause.</important>
 
-### Use <important> tags for critical rules
-```markdown
-<important if="working with database">
-NEVER run DROP or DELETE without WHERE clause.
-Always create a migration file for schema changes.
-</important>
-```
-
-### Key rules
-- Update CLAUDE.md after every correction: "Update your CLAUDE.md so you don't repeat this"
-- Keep under 30 lines for cache efficiency
-- Don't duplicate content across hierarchy (deduplicated by hash, but still costs budget)
-- After 2 failed corrections, /clear and write better prompt
-- Run /init to bootstrap -- it does 8-phase onboarding and respects limits
+Update CLAUDE.md after every correction. Keep under 30 lines for cache efficiency.
+After 2 failed corrections, /clear and write a better prompt.
 
 ---
 
-## CONTEXT MANAGEMENT
+## 03 CONTEXT MANAGEMENT
+# Full: https://github.com/infiniV/ultra-instinct-claude-code/blob/main/tips/03-context-management.md
 
-### Session strategy
-- **Sweet spot: 10-30 min sessions** (wall-time efficiency drops 8.8x in 2hr+ sessions)
-- Fresh conversation per topic. Context = milk (fresh & condensed best)
-- Plan acceptance auto-clears context (intentional -- plan persists, discussion drops)
+Sweet spot: 10-30 min sessions. Quality drops past ~40% context usage.
+/compact at ~50% usage. /clear between unrelated tasks.
 
-### Compaction internals
-- Preserves last 4 messages verbatim
-- Summarizes everything older into 9 sections
-- Custom compact instructions in CLAUDE.md are respected
-- `/compact Focus on implementing X next` -- add summary direction
+What survives compaction: CLAUDE.md, tasks, memory files, git state, disk files.
+What's lost: intermediate reasoning, file contents, conversation nuance.
 
-### What survives compaction
-```
-SURVIVES: CLAUDE.md, task list, memory files, git state, files on disk
-LOST:     Intermediate reasoning, file contents, conversation nuance, tool history
-```
+The 3-file pattern for complex tasks:
+  task_plan.md   -- phases, progress
+  findings.md    -- research, decisions, evidence
+  progress.md    -- session log, test results, blockers
+  Rule: save findings to disk every 2 research operations.
 
-### Token optimization
-- MCP tools cost ~500 tokens EACH (always loaded). Keep under 10 servers, 80 tools
-- Replace MCPs with CLI skills: same functionality, zero idle cost
-- Agent descriptions load into EVERY Task spawn -- keep under 30 words
-- Use `ENABLE_TOOL_SEARCH=auto:5` for large MCP sets (~50% context savings)
+Handoff before context runs out:
+  "Write HANDOFF.md with what we built, what works, what's broken, next steps."
 
-### Handoff pattern (before context runs out)
-```
-"Write HANDOFF.md with: what we built, what works, what's broken,
- what to do next, and key decisions made."
-```
-Then: `claude "Read HANDOFF.md and continue."`
+Token hogs ranked: MCP tools (~500 tokens each, always loaded) > long CLAUDE.md > agent descriptions.
+Keep under 10 MCP servers, 80 total tools. Use ENABLE_TOOL_SEARCH=true for large sets.
+/context shows what's eating your window.
+--add-dir ../backend for multi-repo access.
 
 ---
 
-## PROMPTING
+## 04 COMMANDS & SHORTCUTS
+# Full: https://github.com/infiniV/ultra-instinct-claude-code/blob/main/tips/04-commands-and-shortcuts.md
 
-### Core principles (consensus from 10 experts)
-1. **Describe outcomes, not steps**: "Fix the failing CI tests" not "open file X, change line Y"
-2. **Paste bug, say "fix"**: Zero micromanagement. Claude debugs well alone
-3. **Challenge: "Grill me on these changes and don't PR until I pass your test"**
-4. **After mediocre fix: "Knowing everything you know now, scrap this and implement the elegant solution"**
-5. **After 2 failed corrections: /clear and better prompt** (don't correct a 3rd time)
-6. **Force depth: "ultrathink"**, "think for ten paragraphs", always ask for 2 plans
-7. **Concept elevation: Give Claude your rough prompt, ask it to make it more concise and effective**
-8. **Anti-sycophancy: "Never say 'interesting approach' -- take a position instead"**
-
----
-
-## PLANNING
-
-### Always plan first
-```
-Shift+Tab twice to enter plan mode.
-Pour energy into the plan so Claude can one-shot implementation.
-9/10 experts agree: planning 2-3x success rate.
-```
-
-### Interview pattern
-```
-"Read @SPEC.md and interview me in detail using AskUserQuestion
-about literally anything: technical, UI/UX, concerns, tradeoffs.
-Don't ask obvious questions."
-```
-Then FRESH session to execute the spec.
-
-### Phase-gated plans
-```
-Phase 1 -> Unit Tests -> Phase 2 -> Integration Tests -> Phase 3 -> E2E Tests
-```
-
-### Sprint chain (gstack pattern)
-```
-/office-hours > /plan-ceo-review > /plan-design-review > /plan-eng-review
-> [build] > /review > /qa > /ship > /retro
-```
+Shift+Tab (x2)    Plan Mode
+/compact           Compress context
+/clear             Fresh start
+/branch            Fork conversation for alternate approach
+/teleport          Move session to another device
+/rename            Name session (helps with multiple instances)
+Esc                Cancel response
+Ctrl+B             Background a running command
+Ctrl+G             Open prompt in external editor
+Ctrl+S             Stash current prompt input
+claude -c          Continue last session
+claude -r          Resume session picker
+claude -p "..."    Headless mode (for scripts)
+claude -p --output-format json   Machine-readable output
 
 ---
 
-## TESTING & VERIFICATION
+## 05 GIT & GITHUB
+# Full: https://github.com/infiniV/ultra-instinct-claude-code/blob/main/tips/05-git-and-github.md
 
-### Give Claude feedback loops (Boris's #1 tip, 2-3x quality)
-```markdown
-# In CLAUDE.md:
-After making changes, always run:
-- `npm test` to verify tests pass
-- `npm run lint` to check style
-- `npm run typecheck` to verify types
-```
+Worktrees (biggest productivity unlock):
+  git worktree add ../feature-a -b feature-a
+  # Run separate Claude sessions in each
 
-### TDD: Write failing test first, let Claude implement until it passes
-### Fix-First Review: Auto-fix mechanical issues, only ASK about genuine decisions
-### De-Sloppify Pattern: Don't use negative instructions. Add a separate cleanup agent instead
-### Verification Iron Law: "Confidence is not evidence." Always run the actual test
-### Santa Method: Two separate agents review same code independently, compare findings
+/commit-push-pr    One-step: create branch, commit, push, open PR
+--from-pr 42       Resume session linked to a specific PR
+Draft PRs:         gh pr create --draft (Claude creates, you review before merge)
+
+Cross-model review: Claude plans -> Codex reviews -> Claude implements -> Codex verifies
+Fresh context review: claude -p "Review this branch against main for bugs." (avoids anchoring)
 
 ---
 
-## GIT & GITHUB
+## 06 PROMPTING
+# Full: https://github.com/infiniV/ultra-instinct-claude-code/blob/main/tips/06-prompting.md
 
-### Worktrees for parallel sessions (biggest productivity unlock)
-```bash
-git worktree add ../feature-a -b feature-a
-git worktree add ../feature-b -b feature-b
-# Run separate Claude sessions in each
-```
+Say what, not how: "Fix the failing CI tests" not "open file X, change line Y"
+Paste bug, say "fix": zero micromanagement, Claude debugs well alone.
+After mediocre fix: "Knowing everything, scrap this and implement the elegant solution."
+After 2 failed corrections: /clear and better prompt. Don't correct a 3rd time.
+Force depth: "ultrathink", or "give me 2 plans with tradeoffs before coding."
+Anti-sycophancy: "Never say 'interesting approach' -- take a position instead."
 
-### Draft PRs for safe review
-```bash
-gh pr create --draft  # Claude creates, you review before marking ready
-```
+Instruction budget: ~150-200 rules max before adherence drops.
+If over 150 total (CLAUDE.md + skills + system + tools), split into focused stages.
 
-### Cross-model review
-```
-Claude plans -> Codex reviews -> Claude implements -> Codex verifies
-```
-
-### Review with fresh context
-```bash
-claude -p "Review the changes on this branch against main. Focus on bugs and security."
-```
+Assumptions mode (faster than interview):
+  "Read the codebase first. Present assumptions with confidence levels.
+   I'll only correct what's wrong." Reduces interactions from ~15 to ~3.
 
 ---
 
-## MULTI-AGENT
+## 07 PLANNING & SPECS
+# Full: https://github.com/infiniV/ultra-instinct-claude-code/blob/main/tips/07-planning-and-specs.md
 
-### Scout pattern (10-20x cheaper)
-```
-Haiku reads 30 files for pennies -> Sonnet reads the 4 that matter
-```
+Shift+Tab twice for plan mode. The plan is the highest-leverage part.
 
-### Smart model routing
-```
-Haiku:  explore, lookups, file reading
-Sonnet: implementation, debugging, testing
-Opus:   architecture, code review, planning
-```
+Interview pattern: "Interview me about this spec. Ask 40+ questions. Don't implement until done."
+Then execute in a FRESH session with /clear.
 
-### Subagent types (observed behavior)
-```
-Explore: Haiku, READ-ONLY, fast, parallelizes tool calls
-Plan:    Parent model, READ-ONLY, must list "Critical Files for Implementation"
-General: Full access, all tools
-Verify:  Adversarial tester, cannot modify files, issues PASS/FAIL/PARTIAL
-```
+Phase-gated: Phase 1 -> tests pass -> Phase 2 -> tests pass -> Phase 3
+Vertical slices over horizontal: "User auth end-to-end" not "all models then all APIs then all UI"
 
-### One input, one output per agent. /clear between agents.
+Confidence check before coding:
+  "Rate your confidence 1-10. If below 7, stop and ask questions."
+
+Design doc before implementation:
+  "Write a ~200-line design doc: what you found, what you'll build, risks, interfaces."
 
 ---
 
-## HOOKS
+## 08 TESTING & VERIFICATION
+# Full: https://github.com/infiniV/ultra-instinct-claude-code/blob/main/tips/08-testing-and-verification.md
 
-### Exit codes: 0=allow, 2=deny (blocks tool), other=warn
-### Hook denials act as USER FEEDBACK -- include helpful alternatives, not just "blocked"
-
-### Essential hooks
-
-#### Safety guard (PreToolUse on Bash)
-```bash
-#!/usr/bin/env bash
-set -euo pipefail
-INPUT=$(cat)
-COMMAND=$(echo "$INPUT" | jq -r '.tool_input.command // empty')
-if echo "$COMMAND" | grep -qE "rm -rf|git push.*--force.*main|DROP TABLE|chmod 777"; then
-  echo "Blocked: destructive command. Use safer alternative." >&2
-  exit 2
-fi
-exit 0
-```
-
-#### Block --no-verify (PreToolUse on Bash)
-```bash
-if echo "$COMMAND" | grep -q "\-\-no-verify"; then
-  echo "Blocked: --no-verify bypasses pre-commit hooks" >&2
-  exit 2
-fi
-```
-
-#### Config protection (PreToolUse on Write/Edit)
-Block changes to .eslintrc, .prettierrc, tsconfig.json -- forces fixing code, not weakening linters.
-
-#### Commit nudge after 8+ edits (PostToolUse on Edit)
-Soft reminder to commit. Prevents giant uncommitted changesets.
-
-### Hook placement rules
-```
-Global (~/.claude/settings.json):     Protection hooks (safety, no-squash)
-Project (.claude/settings.json):      Build hooks (linters, test runners)
-Local (.claude/settings.local.json):  Personal hooks (notifications, logging)
-```
-
-### Real fire frequency: Bash 10K+, Read 9K, Edit 5K per session set
-### PreToolUse hooks MUST be fast (<50ms)
+Feedback loops (2-3x quality): put test/lint/build commands in CLAUDE.md.
+TDD: write failing test first, then implement until it passes.
+Iron law: "Confidence is not evidence." Always run the actual test.
+Fix-first review: auto-fix mechanical issues, only ASK about design decisions.
+Santa method: two separate agents review same code, compare findings.
+Adversarial verification: "Your job is to BREAK it, not confirm it."
+Cross-phase regression: after each phase, run ALL prior phases' tests.
+Cross-model QA: use a different model (Gemini, Codex) to audit Claude's output.
 
 ---
 
-## MCP, SKILLS & PLUGINS
+## 09 AGENTS & ORCHESTRATION
+# Full: https://github.com/infiniV/ultra-instinct-claude-code/blob/main/tips/09-multi-agent.md
 
-### Skills > Commands (commands are legacy)
-```yaml
-# .claude/skills/my-skill/SKILL.md
----
-name: my-skill
-description: What it does and when to use it
-disable-model-invocation: true  # user-only trigger for dangerous skills
----
-```
+Subagents for exploration: offload file-reading, only the summary returns.
+One input, one output per agent. /clear between sequential agents.
 
-### Fewer tools beat many (Apple CodeAct: single primitive outperformed specialized toolkits by 20%)
-### Search-first: Adopt > Extend > Compose > Build
-### Custom slash commands: `.claude/commands/name.md` with $ARGUMENTS
+Model routing:
+  Haiku:  explore, lookups, file reading (cheap)
+  Sonnet: implementation, debugging (workhorse)
+  Opus:   architecture, security review, planning (expensive but fewer corrections)
 
----
+Agent frontmatter (.claude/agents/explorer.md):
+  model: haiku | sonnet | opus | inherit
+  tools: Read, Grep, Glob (scope to minimum needed)
+  isolation: worktree (prevents file conflicts)
 
-## PERFORMANCE & COST
-
-### Cost benchmarks (real data)
-```
-Simple bug fix:      $0.30-0.80  (~10 min, sonnet)
-Feature:             $1-3        (~30 min, sonnet)
-Large refactor:      $5-15       (~1 hr, sonnet + subagents)
-Architecture:        $5-20       (~30 min, opus)
-Agent team (3):      $10-30      (~30 min, sonnet)
-```
-
-### The 5 cost drivers (ranked)
-1. Long sessions (1hr = 10-50x five 12-min sessions)
-2. Opus usage (1.7x sonnet)
-3. Subagents (parallel billing)
-4. Large file reads
-5. Unfocused tool calls
-
-### Cache optimization
-- 95% cache hit rate on sessions >30 min
-- Three cache killers: editing CLAUDE.md mid-session, long CLAUDE.md, switching models
-- Switching models DESTROYS cache (can be MORE expensive than staying on Opus)
-- $200/mo max plan = ~$12K API equivalent
+Agent teams (experimental): CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1
+Ralph loop: /ralph-loop "fix all tests" --max-iterations 5 (iterates until passing)
 
 ---
 
-## ADVANCED PATTERNS
+## 10 HOOKS & AUTOMATION
+# Full: https://github.com/infiniV/ultra-instinct-claude-code/blob/main/tips/10-hooks-and-automation.md
 
-### Sequential pipeline with fresh context
-```bash
-#!/bin/bash
-set -e
-claude -p "Implement feature from spec..."
-claude -p "Review and cleanup..."
-claude -p "Run build, lint, tests, fix failures..."
-claude -p "Create conventional commit..."
-```
+Exit codes: 0=allow, 2=block tool call, other=warn.
+Hook denials are user feedback -- include alternatives, not just "blocked."
 
-### Model routing in pipelines
-```bash
-claude -p --model opus "Analyze architecture and write plan..."
-claude -p "Implement according to plan..."          # sonnet
-claude -p --model opus "Review for security..."
-```
+22+ hook events: PreToolUse, PostToolUse, Stop, SubagentStop, SessionStart, SessionEnd,
+  UserPromptSubmit, PreCompact, PostCompact, TaskCreated, TaskCompleted, CwdChanged,
+  FileChanged, ConfigChange, PermissionDenied, WorktreeCreate, WorktreeRemove, etc.
 
-### Tool restrictions per step
-```bash
-claude -p --allowedTools "Read,Grep,Glob" "Audit for vulnerabilities..."    # read-only
-claude -p --allowedTools "Read,Write,Edit,Bash" "Implement fixes..."        # write
-```
+Prompt-based hooks (officially recommended over bash):
+  { "hooks": { "Stop": [{ "type": "prompt", "prompt": "Did the agent run tests?" }] } }
 
-### Cross-iteration context
-```
-SHARED_TASK_NOTES.md -- Claude reads at start, updates at end of each `claude -p` call
-```
+HTTP hooks: { "type": "http", "url": "https://your-server.com/webhook" }
 
-### Docker sandbox (no egress)
-```yaml
-services:
-  agent:
-    build: .
-    user: "1000:1000"
-    cap_drop: [ALL]
-    security_opt: [no-new-privileges:true]
-    networks: [internal]
-networks:
-  internal:
-    internal: true  # no outbound
-```
+Conditional firing: { "if": "Bash(git *)", "command": "./hooks/check-git.sh" }
+  Saves thousands of unnecessary process spawns per session.
 
-### Permission deny rules
-```jsonc
-{
-  "permissions": {
-    "deny": [
-      "Read(~/.ssh/**)", "Read(~/.aws/**)", "Read(**/.env*)",
-      "Bash(curl * | bash)", "Bash(ssh *)", "Bash(nc *)"
-    ]
-  }
-}
-```
+PreToolUse hooks MUST be fast (<50ms). They fire 10,000+ times per session.
 
 ---
 
-## DEEP CUTS (community-discovered behaviors)
+## 11 SKILLS & MARKETPLACE
+# Full: https://github.com/infiniV/ultra-instinct-claude-code/blob/main/tips/11-skills-and-marketplace.md
 
-### Prompt has a static zone (cached) and dynamic zone (costs tokens every turn)
-```
-[STATIC - cached across turns, free after first]:
-  System instructions, tool definitions, built-in rules
+Skills auto-trigger on context. Commands require manual /invoke. Skills are preferred.
 
-[DYNAMIC - recalculated every turn, costs tokens]:
-  Environment info, git status, CLAUDE.md, settings, skills, MCP
-```
+Plugin marketplace: /plugin to browse, install, validate.
+Plugin structure: .claude-plugin/plugin.json + commands/ + agents/ + skills/ + hooks/
+Sources: git repos, npm packages, local directories.
 
-### CLAUDE.md is in the dynamic zone -- always fresh, never cached
-### /init does 8-phase onboarding and imports from .cursor/rules, AGENTS.md, etc.
-### Memory selector sees ONLY filenames + descriptions (up to 5 selected per query)
-### WebFetch: trusted domains get full content, untrusted get 125-char quote limit
-### Tool name aliases work: read, write, edit, glob, grep (case-insensitive, hyphens -> underscores)
+Useful plugins: code-review (5 parallel agents), feature-dev (7-phase workflow),
+  hookify (create hooks from conversation), commit-commands (/commit-push-pr).
+
+Context7 MCP for live library docs (avoids outdated training data).
+Skills can store persistent state: ${CLAUDE_PLUGIN_DATA}/data.json
+disable-model-invocation: true prevents Claude from auto-triggering dangerous skills.
+
+Search order before building: repo -> npm -> marketplace -> MCP -> community -> build.
+
+---
+
+## 12 MCP & TOOLS
+# Full: https://github.com/infiniV/ultra-instinct-claude-code/blob/main/tips/12-mcp-and-tools.md
+
+MCP servers in .mcp.json (project) or ~/.claude.json (global).
+Each tool schema costs ~500 tokens, loaded every message. Budget: <10 servers, <80 tools.
+Replace MCPs with CLI skills for same functionality, zero idle cost.
+ENABLE_TOOL_SEARCH=true lazy-loads tool schemas on demand.
+Fewer expressive tools beat many narrow ones (20% benchmark improvement).
+MCP scopes: Subagent > Project > User.
+Bash wrappers eliminate schema overhead: up to 90% token reduction.
+
+---
+
+## 13 PERFORMANCE & COST
+# Full: https://github.com/infiniV/ultra-instinct-claude-code/blob/main/tips/13-performance-and-cost.md
+
+Cost drivers ranked:
+  1. Long sessions (1hr = 10-50x five 12-min sessions)
+  2. Opus usage (but fewer corrections can make it cheaper overall)
+  3. Parallel subagents (each bills independently)
+  4. Large file reads
+  5. Unfocused tool calls
+
+Cache: 95% hit rate on sessions >30 min. Three killers: editing CLAUDE.md mid-session,
+  long CLAUDE.md files, switching models (destroys entire cache namespace).
+
+PTC (Programmatic Tool Calling): ~37% token reduction for multi-step operations.
+CLAUDE.md is in the dynamic (uncached) zone -- always fresh but costs tokens every turn.
+Fast mode for Opus 4.6: same model, lower latency.
+
+Cost benchmarks: bug fix $0.30-0.80, feature $1-3, refactor $5-15, architecture $5-20.
+
+---
+
+## 14 SECURITY & PERMISSIONS
+# Full: https://github.com/infiniV/ultra-instinct-claude-code/blob/main/tips/14-security.md
+
+Permission deny rules:
+  { "deny": ["Read(~/.ssh/**)", "Read(~/.aws/**)", "Read(**/.env*)", "Bash(curl*|bash)"] }
+
+Sandbox mode: { "sandbox": { "enabled": true } } -- restricts filesystem + network.
+CLAUDE_CODE_SUBPROCESS_ENV_SCRUB=1 strips API keys from subprocesses.
+
+Scan skills/hooks for prompt injection: 36% of public skills contain injection vectors.
+  rg -nP '[\x{200B}\x{200C}\x{200D}\x{2060}\x{FEFF}]' skills/ hooks/
+
+Separate agent identity from personal accounts. Dedicated bot users, scoped API keys.
+Never use --dangerously-skip-permissions on autonomous loops or public repos.
+
+Enterprise: managed-settings.json with allowManagedPermissionRulesOnly, allowManagedHooksOnly.
+
+---
+
+## 15 ADVANCED PATTERNS
+# Full: https://github.com/infiniV/ultra-instinct-claude-code/blob/main/tips/15-advanced-patterns.md
+
+Sequential pipeline with fresh context:
+  claude -p "Analyze..." > analysis.txt
+  claude -p "Fix: $(cat analysis.txt)"
+  claude -p "Run tests, fix failures"
+
+Model routing: opus for analysis/review, sonnet for implementation.
+Tool restrictions: --allowedTools "Read,Grep,Glob" for read-only analysis steps.
+SHARED_TASK_NOTES.md for cross-iteration context between claude -p calls.
+
+Docker sandbox: networks: { internal: { internal: true } } blocks all outbound.
+Kill process groups, not parents: process.kill(-child.pid, 'SIGKILL')
+
+Self-improvement: save learnings to .claude/learnings.md at session end.
+Sprint workflow: think -> plan -> build -> review -> test -> ship -> reflect.
