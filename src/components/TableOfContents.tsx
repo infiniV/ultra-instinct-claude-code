@@ -25,6 +25,13 @@ function extractHeadings(container: Element): Heading[] {
   return headings;
 }
 
+/** Extract tip number prefix like "#02.01" from heading text */
+function parseTipText(text: string): { number: string; label: string } | null {
+  const match = text.match(/^#(\d{2}\.\d{2})\s+(.+)$/);
+  if (match) return { number: match[1], label: match[2] };
+  return null;
+}
+
 export default function TableOfContents() {
   const [headings, setHeadings] = useState<Heading[]>([]);
   const [activeId, setActiveId] = useState<string>("");
@@ -110,28 +117,36 @@ export default function TableOfContents() {
           On this page
         </div>
         <nav>
-          <ul className="space-y-0.5">
-            {headings.map((h) => (
-              <li key={h.id}>
-                <button
-                  onClick={() => scrollTo(h.id)}
-                  title={h.text}
-                  className={`
-                    block w-full text-left text-[0.6875rem] leading-snug py-1 transition-colors rounded truncate
-                    ${h.level === 1 ? "pl-0 font-semibold text-[0.75rem]" : ""}
-                    ${h.level === 2 ? "pl-2.5" : ""}
-                    ${h.level === 3 ? "pl-5" : ""}
-                    ${
-                      activeId === h.id
-                        ? "text-notion-accent font-medium"
-                        : "text-notion-secondary hover:text-notion-text"
-                    }
-                  `}
-                >
-                  {h.text}
-                </button>
-              </li>
-            ))}
+          <ul className="toc-list">
+            {headings.map((h) => {
+              const isActive = activeId === h.id;
+              const tip = h.level === 3 ? parseTipText(h.text) : null;
+
+              return (
+                <li key={h.id} className="toc-item">
+                  <button
+                    onClick={() => scrollTo(h.id)}
+                    title={h.text}
+                    className={`
+                      toc-link
+                      ${h.level === 1 ? "toc-h1" : ""}
+                      ${h.level === 2 ? "toc-h2" : ""}
+                      ${h.level === 3 ? "toc-h3" : ""}
+                      ${isActive ? "toc-active" : ""}
+                    `}
+                  >
+                    {tip ? (
+                      <>
+                        <span className="toc-tip-number">{tip.number}</span>
+                        <span className="truncate">{tip.label}</span>
+                      </>
+                    ) : (
+                      <span className="truncate">{h.text}</span>
+                    )}
+                  </button>
+                </li>
+              );
+            })}
           </ul>
         </nav>
       </div>

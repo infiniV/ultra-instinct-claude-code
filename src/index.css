@@ -317,6 +317,86 @@ html.dark .mdx-content a {
   font-weight: 600;
 }
 
+/* ── Table of Contents ───────────────────────── */
+
+.toc-list {
+  position: relative;
+  padding-left: 0.625rem;
+  border-left: 1.5px solid var(--color-notion-border);
+}
+
+.toc-item {
+  position: relative;
+}
+
+.toc-link {
+  display: flex;
+  align-items: baseline;
+  gap: 0.375rem;
+  width: 100%;
+  text-align: left;
+  font-size: 0.6875rem;
+  line-height: 1.35;
+  padding: 0.3125rem 0.375rem;
+  border-radius: 0.25rem;
+  color: var(--color-notion-secondary);
+  transition: color 0.15s, background 0.15s;
+  position: relative;
+}
+
+.toc-link:hover {
+  color: var(--color-notion-text);
+  background: var(--color-notion-hover);
+}
+
+.toc-link.toc-active {
+  color: var(--color-notion-text);
+  font-weight: 500;
+}
+
+/* Active indicator on the left border */
+.toc-link.toc-active::before {
+  content: "";
+  position: absolute;
+  left: -0.6875rem;
+  top: 0.25rem;
+  bottom: 0.25rem;
+  width: 2px;
+  border-radius: 1px;
+  background: var(--color-notion-accent);
+}
+
+.toc-h1 {
+  font-weight: 600;
+  font-size: 0.75rem;
+  font-family: var(--font-serif);
+  margin-top: 0.125rem;
+}
+
+.toc-h2 {
+  margin-top: 0.5rem;
+  font-weight: 500;
+  font-size: 0.6875rem;
+}
+
+.toc-h3 {
+  font-size: 0.6875rem;
+}
+
+.toc-tip-number {
+  font-family: var(--font-mono);
+  font-size: 0.5625rem;
+  font-weight: 600;
+  color: var(--color-notion-accent);
+  opacity: 0.7;
+  flex-shrink: 0;
+  min-width: 1.75rem;
+}
+
+.toc-active .toc-tip-number {
+  opacity: 1;
+}
+
 /* ── Tip level/impact badges ─────────────────── */
 
 .tip-badge-row {
